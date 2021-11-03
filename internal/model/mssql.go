@@ -2,7 +2,6 @@ package model
 
 import (
 	"database/sql"
-	"log"
 	"net/url"
 	"reflect"
 
@@ -42,12 +41,7 @@ func (mssql *MsSQL) Find(qry string, target interface{}) error {
 	// mssql.conn.Exec(qry)
 	t := reflect.TypeOf(target)
 	logrus.Println(t)
-	fields := resolveStructFields(target)
-	// result, err := nil
-	for k, field := range fields {
-		log.Println(field)
-		log.Println(reflect.ValueOf(target).Elem().Field(k))
-	}
+	logrus.Println(getAsAbstractStructFieldSetFromInterface(target))
 	// logrus.Println(f.Tag.Get("mssql"))
 	return nil
 }
