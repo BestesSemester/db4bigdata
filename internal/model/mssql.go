@@ -39,13 +39,14 @@ func (mssql *MsSQL) Delete(obj interface{}) error {
 
 // Returns sql-Result
 func (mssql *MsSQL) Find(qry string, target interface{}) error {
-	mssql.conn.Exec(qry)
+	// mssql.conn.Exec(qry)
 	t := reflect.TypeOf(target)
 	logrus.Println(t)
 	fields := resolveStructFields(target)
 	// result, err := nil
-	for _, field := range fields {
+	for k, field := range fields {
 		log.Println(field)
+		log.Println(reflect.ValueOf(target).Elem().Field(k))
 	}
 	// logrus.Println(f.Tag.Get("mssql"))
 	return nil

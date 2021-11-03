@@ -12,27 +12,27 @@ type Database interface {
 type StorageType int
 
 const (
-	mongodb StorageType = 0
-	mssql   StorageType = 1
-	neo4j   StorageType = 3
+	MongoDB StorageType = 0
+	MSQL    StorageType = 1
+	Neo4J   StorageType = 2
 )
 
 func ConnectStorage(st StorageType) (Database, error) {
 	// connect
 	switch st {
-	case mongodb:
+	case MongoDB:
 		conf := MongoConfig{}
 		// if passwd, ok := url.URL.User.Password(); ok {
 		// 	conf.AccessKeySecret = passwd
 		// }
 		return ConnectMongo(&conf)
-	case mssql:
+	case MSQL:
 		conf := MsSQLConfig{}
 		// if passwd, ok := url.URL.User.Password(); ok {
 		// 	conf.Password = passwd
 		// }
 		return ConnectMsSQL(&conf)
-	case neo4j:
+	case Neo4J:
 		conf := Neo4jConfig{}
 		return ConnectNeo4j(&conf)
 	default:
