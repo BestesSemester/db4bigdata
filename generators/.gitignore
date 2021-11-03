@@ -1,0 +1,4 @@
+.ipynb_checkpoints
+output_data
+input_data/*.geojson
+input_data/*.csv
