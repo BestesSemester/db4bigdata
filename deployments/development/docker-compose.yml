@@ -3,7 +3,6 @@ version: "3.9"
 services:
   mongo:
     image: mongo:5.0
-    restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
@@ -11,6 +10,7 @@ services:
       - /databases/mongo:/data/db
     ports:
       - 27017:27017
+
 
   mongo-express:
     image: mongo-express
