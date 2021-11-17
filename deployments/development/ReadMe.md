@@ -25,6 +25,10 @@ First start take some time since docker images for databases must be downloaded 
 ### MSSql
 MSSql is host on http://localhost:1433. There is no UI to interact with the database. You need an external tool to connect with the database. 
 
+If you want to connect to the database use the following credentials:
+Username: SA
+Password: 1234myFancyPasswort
+
 ToDO -> Add description for external tool
 ### Neo4J
 Neo4J database is hosted on http://localhost:7474/. Since there is an build in WebUI you can access the database directly with your browser.  
