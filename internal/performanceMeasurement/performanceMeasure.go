@@ -25,10 +25,9 @@ func (p *PerformanceMeasurement) MeasureTime(givenTime time.Time,operation strin
 	toWrite := fmt.Sprintf("It took %s Seconds to do the %s-operation",elapsed,operation)
 	p.writeToFile(toWrite)
 }
-
-func (p *PerformanceMeasurement) MeasureCPU(startTime time.Time, operation string) {
-	elapsed := time.Since(startTime)
-	percent, _ := cpu.Percent(elapsed, true)
+// MeasureCPU - Measures how much CPU power was needed to complete the operation.
+func (p *PerformanceMeasurement) MeasureCPU(operation string) {
+	percent, _ := cpu.Percent(0, true)
 	toWrite := fmt.Sprintf("It took %.2f cpu power to do the %s-operation", percent[cpu.CPUser], operation)
 	p.writeToFile(toWrite)
 }
