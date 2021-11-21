@@ -1,11 +1,10 @@
 package performanceMeasurement
 
 import (
-"fmt"
-"github.com/sirupsen/logrus"
-"log"
-"os"
-"time"
+	"fmt"
+	"github.com/sirupsen/logrus"
+	"os"
+	"time"
 )
 
 type PerformanceMeasurement struct {
@@ -27,16 +26,15 @@ func (p *PerformanceMeasurement) MeasureTime(givenTime time.Time,operation strin
 }
 // writeToFile - Writes string to log.file
 func (p *PerformanceMeasurement) writeToFile(content string) {
-	file, err := os.OpenFile(p.LogFilePath,
+	logFile, err := os.OpenFile(p.LogFilePath,
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.FileMode(0644))
 	if err != nil {
 		logrus.Println(err)
 	} else {
-		logger := log.New(file, "prefix", log.LstdFlags)
-		logger.Println(content)
-		fmt.Println("Done")
+		logrus.SetOutput(logFile)
+		logrus.Println(content)
 	}
-	err = file.Close()
+	err = logFile.Close()
 	if err != nil {
 		logrus.Println(err)
 	}
