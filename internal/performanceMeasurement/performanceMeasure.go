@@ -2,6 +2,7 @@ package performanceMeasurement
 
 import (
 	"fmt"
+	"github.com/shirou/gopsutil/cpu"
 	"github.com/sirupsen/logrus"
 	"os"
 	"time"
@@ -24,6 +25,15 @@ func (p *PerformanceMeasurement) MeasureTime(givenTime time.Time,operation strin
 	toWrite := fmt.Sprintf("It took %s Seconds to do the %s-operation",elapsed,operation)
 	p.writeToFile(toWrite)
 }
+
+func (p *PerformanceMeasurement) MeasureCPU(startTime time.Time, operation string) {
+	elapsed := time.Since(startTime)
+	percent, _ := cpu.Percent(elapsed, true)
+	toWrite := fmt.Sprintf("It took %.2f cpu power to do the %s-operation", percent[cpu.CPUser], operation)
+	p.writeToFile(toWrite)
+}
+
+
 // writeToFile - Writes string to log.file
 func (p *PerformanceMeasurement) writeToFile(content string) {
 	logFile, err := os.OpenFile(p.LogFilePath,
