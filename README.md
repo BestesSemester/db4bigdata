@@ -3,3 +3,9 @@
 To run locally:  
 `go get -v ./...`  
 `go run cmd/generator/main.go`
+
+# Importer 
+
+To run locally:  
+`go get -v ./...`  
+`go run cmd/generator/main.go`
