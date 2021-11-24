@@ -1,4 +1,3 @@
 .ipynb_checkpoints
-output_data
+output_data/*.json
 input_data/*.geojson
-input_data/*.csv
