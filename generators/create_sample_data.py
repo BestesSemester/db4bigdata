@@ -18,7 +18,8 @@ from tqdm import tqdm
 
 some_seed = 42
 np.random.seed(some_seed)
-n_persons = 10000
+n_adresses = 100000
+n_persons  = 10000
 n_invoices = 1000
 min_net_sum = 20
 
@@ -39,46 +40,61 @@ def jsonobj_hook(obj):
 
 
 #%% read geojson-files with adress data from Germany (takes some minutes)
-path_to_file = r'./input_data/squares.geojson'
-with open(path_to_file, encoding='utf-8') as f:
-   strasse_ort_01 = json.load(f, object_hook=jsonobj_hook)
-df_squares = pd.json_normalize(strasse_ort_01['features'])
-df_squares = df_squares[ df_squares['properties.HIGHWAY'].str.contains('residential')   |
-                         df_squares['properties.HIGHWAY'].str.contains('living_street') |
-                         df_squares['properties.HIGHWAY'].str.contains('pedestrian')     ]
-df_squares = df_squares[ df_squares['properties.NAME'].str.len().between(2,50)]
+create_adress_store = False
+if create_adress_store:
+    path_to_file = r'./input_data/squares.geojson'
+    with open(path_to_file, encoding='utf-8') as f:
+       strasse_ort_01 = json.load(f, object_hook=jsonobj_hook)
+    df_squares = pd.json_normalize(strasse_ort_01['features'])
+    df_squares = df_squares[ df_squares['properties.HIGHWAY'].str.contains('residential')   |
+                             df_squares['properties.HIGHWAY'].str.contains('living_street') |
+                             df_squares['properties.HIGHWAY'].str.contains('pedestrian')     ]
+    df_squares = df_squares[ df_squares['properties.NAME'].str.len().between(2,50)]
 
 
-path_to_file = r'./input_data/streets.geojson'
-with open(path_to_file, encoding='utf-8') as f:
-    strasse_ort_02 = json.load(f, object_hook=jsonobj_hook)
-df_streets = pd.json_normalize(strasse_ort_02['features'])
-df_streets = df_streets[ df_streets['properties.HIGHWAY'].str.contains('residential')   |
-                         df_streets['properties.HIGHWAY'].str.contains('living_street') |
-                         df_streets['properties.HIGHWAY'].str.contains('pedestrian')     ]
-df_streets = df_streets[ df_streets['properties.NAME'].str.len().between(2,50)]
+    path_to_file = r'./input_data/streets.geojson'
+    with open(path_to_file, encoding='utf-8') as f:
+        strasse_ort_02 = json.load(f, object_hook=jsonobj_hook)
+    df_streets = pd.json_normalize(strasse_ort_02['features'])
+    df_streets = df_streets[ df_streets['properties.HIGHWAY'].str.contains('residential')   |
+                             df_streets['properties.HIGHWAY'].str.contains('living_street') |
+                             df_streets['properties.HIGHWAY'].str.contains('pedestrian')     ]
+    df_streets = df_streets[ df_streets['properties.NAME'].str.len().between(2,50)]
 
-df_streets_and_squares = df_streets.append(df_squares, ignore_index=True)
-df_streets_and_squares = df_streets_and_squares[['properties.NAME', 'properties.GEMEINDE', 'properties.PLZ']]
-df_streets_and_squares.rename(columns={'properties.NAME': 'Street', 
-                                       'properties.GEMEINDE': 'Residence', 'properties.PLZ': 'ZipCode'}, inplace = True)
-df_streets_and_squares['ZipCode'] = df_streets_and_squares.apply(lambda x: x['ZipCode'][0:(x['ZipCode'].find(','))] if ',' in x['ZipCode'] else x['ZipCode'], axis = 1)
-df_streets_and_squares['ZipCode'] = df_streets_and_squares['ZipCode'].astype(int)
-df_streets_and_squares.drop_duplicates( keep='first', inplace = True)
+    df_streets_and_squares = df_streets.append(df_squares, ignore_index=True)
+    df_streets_and_squares = df_streets_and_squares[['properties.NAME', 'properties.GEMEINDE', 'properties.PLZ']]
+    df_streets_and_squares.rename(columns={'properties.NAME': 'Street', 
+                                           'properties.GEMEINDE': 'Residence', 'properties.PLZ': 'ZipCode'}, inplace = True)
+    df_streets_and_squares['ZipCode'] = df_streets_and_squares.apply(lambda x: x['ZipCode'][0:(x['ZipCode'].find(','))] if ',' in x['ZipCode'] else x['ZipCode'], axis = 1)
+    df_streets_and_squares['ZipCode'] = df_streets_and_squares['ZipCode'].astype(int)
+    df_streets_and_squares.drop_duplicates( keep='first', inplace = True)
 
-df_plz_vorwahl = pd.read_csv(r"./input_data/orte_de_plz_vorwahl.csv", 
-                             sep = ';', usecols=['Plz', 'Vorwahl'], dtype={'Plz': np.int64, 'Vorwahl': str})
-df_plz_vorwahl.drop_duplicates( subset = 'Plz', keep='first', inplace = True)
-df_plz_vorwahl.dropna(inplace=True)
+    df_plz_vorwahl = pd.read_csv(r"./input_data/orte_de_plz_vorwahl.csv", 
+                                 sep = ';', usecols=['Plz', 'Vorwahl'], dtype={'Plz': np.int64, 'Vorwahl': str})
+    df_plz_vorwahl.drop_duplicates( subset = 'Plz', keep='first', inplace = True)
+    df_plz_vorwahl.dropna(inplace=True)
 
-df_streets_and_squares_vorwahl = pd.merge(df_streets_and_squares, df_plz_vorwahl, left_on=['ZipCode'], right_on=['Plz'], how='inner')
+    df_streets_and_squares_vorwahl = pd.merge(df_streets_and_squares, df_plz_vorwahl, left_on=['ZipCode'], right_on=['Plz'], how='inner')
+    df_streets_and_squares_vorwahl = df_streets_and_squares_vorwahl.drop('Plz', axis=1)
+    df_sample_adresses = df_streets_and_squares_vorwahl.sample(n=n_adresses)
+    
+    out_json = df_sample_adresses.to_json(orient='records')
+    with open(r'.\adresses.json', 'w') as f:
+        f.write(out_json)
+ 
+#%% load adresses
+
+df_adress_store = pd.read_json(r'./adresses.json', 
+                               orient='records',  dtype = {"ZipCode": object, "Vorwahl": object})
+
+
 
 #%% create persons
 
 house_numbers = geom.rvs(0.03, size = n_persons) 
 ascii_lowercase = [chr(i) for i in range(ord('a'), ord('z') + 1)]
 postfixes =[' '] + ascii_lowercase
-df_sample_adresses = df_streets_and_squares_vorwahl.sample(n=n_persons)
+df_sample_adresses = df_adress_store.sample(n=n_persons, replace=True)
 house_numbers_postfix_index =(geom.rvs(0.9, loc=-1, size = n_persons))
 
 df_first_names_m = pd.read_csv(r"./input_data/vornamen_m.txt", names=['FirstName'], skiprows = 1)
