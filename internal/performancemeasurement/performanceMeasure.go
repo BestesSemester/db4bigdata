@@ -108,7 +108,7 @@ func (p *PerformanceMeasurement) startFileWriter() {
 		if !more {
 			p.stopChannel <- true
 		}
-		if _, err := logFile.WriteString(content); err != nil {
+		if _, err := logFile.WriteString(content + "\n"); err != nil {
 			logrus.Errorln(err)
 			break
 		}
