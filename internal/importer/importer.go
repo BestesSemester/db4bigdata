@@ -25,11 +25,12 @@ func ImportPersonsFromJSON(jsonfile string) {
 		logrus.Fatal(err)
 	}
 	logrus.Println(len(persons))
-	db, err := model.ConnectStorage(model.MSQL)
+	// db, err := model.ConnectStorage(model.MSQL)
+	mongo, _ := model.ConnectStorage(model.MongoDB)
+	err = mongo.Save(persons)
 	if err != nil {
 		logrus.Fatal("Error in saving", err)
 	}
-	err = db.Save(persons)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -82,25 +83,25 @@ func ImportInvoiceFromJSON(jsonfile string) {
 
 }
 
-func ImportProvisiondistributionFromJSON(jsonfile string) {
-	// Let's first read the `config.json` file
-	content, err := ioutil.ReadFile(jsonfile)
-	if err != nil {
-		logrus.Fatal("Error when opening file: ", err)
-	}
-	var provdib []model.Provdib
-	err = json.Unmarshal(content, &provdib)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	logrus.Println(len(provdib))
-	db, err := model.ConnectStorage(model.MSQL)
-	if err != nil {
-		logrus.Fatal("Error in saving", err)
-	}
-	err = db.Save(provdib)
-	if err != nil {
-		logrus.Fatal(err)
-	}
+// func ImportProvisiondistributionFromJSON(jsonfile string) {
+// 	// Let's first read the `config.json` file
+// 	content, err := ioutil.ReadFile(jsonfile)
+// 	if err != nil {
+// 		logrus.Fatal("Error when opening file: ", err)
+// 	}
+// 	var provdib []model.Provdib
+// 	err = json.Unmarshal(content, &provdib)
+// 	if err != nil {
+// 		logrus.Fatal(err)
+// 	}
+// 	logrus.Println(len(provdib))
+// 	db, err := model.ConnectStorage(model.MSQL)
+// 	if err != nil {
+// 		logrus.Fatal("Error in saving", err)
+// 	}
+// 	err = db.Save(provdib)
+// 	if err != nil {
+// 		logrus.Fatal(err)
+// 	}
 
-}
+// }

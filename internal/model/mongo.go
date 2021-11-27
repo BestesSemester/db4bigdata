@@ -33,6 +33,14 @@ func ConnectMongo(conf *MongoConfig) (Database, error) {
 
 // TODO: implement save logic
 func (mongo *MyMongo) Save(obj interface{}) error {
+	db := mongo.conn.Database("my_go_db")
+	coll := db.Collection("persons")
+
+	res, err := coll.InsertOne(*mongo.context, obj.data)
+	if err != nil {
+		logrus.Fatal("Error when opening file: ", err)
+	}
+	logrus.Print(res.InsertedID)
 	return nil
 }
 

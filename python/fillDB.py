@@ -7,7 +7,7 @@ username = 'root'
 password = 'example'
 client = MongoClient(f'mongodb://{username}:{password}@127.0.0.1')
 
-db=client.mydb
+db = client.mydb
 persons_col = db.persons
 invoices_col = db.invoices
 hierarchy_col = db.hierarchy
@@ -24,16 +24,6 @@ with open(r'.\generators\output_data\invoices.json', 'r') as f:
 with open(r'.\generators\output_data\hierarchy.json', 'r') as f:
     hierarchy = json.load(f)
     hierarchy_col.insert_many(hierarchy)
-
-
-# person = {
-#     "name" : "Andreas",
-#     "last_name" : "Hepner",
-#     "age" : "56",
-#     "location" : "Brilon",
-
-
-# }
 
 # id = persons.insert_one(person).inserted_id
 
