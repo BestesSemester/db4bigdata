@@ -25,15 +25,7 @@ func ImportPersonsFromJSON(jsonfile string) {
 		logrus.Fatal(err)
 	}
 	logrus.Println(len(persons))
-	// db, err := model.ConnectStorage(model.MSQL)
-	mongo, _ := model.ConnectStorage(model.MongoDB)
-	err = mongo.Save(persons)
-	if err != nil {
-		logrus.Fatal("Error in saving", err)
-	}
-	if err != nil {
-		logrus.Fatal(err)
-	}
+	ImportObjectsMongo(persons)
 
 }
 
@@ -49,14 +41,7 @@ func ImportHierarchyFromJSON(jsonfile string) {
 		logrus.Fatal(err)
 	}
 	logrus.Println(len(hierarchy))
-	db, err := model.ConnectStorage(model.MSQL)
-	if err != nil {
-		logrus.Fatal("Error in saving", err)
-	}
-	err = db.Save(hierarchy)
-	if err != nil {
-		logrus.Fatal(err)
-	}
+	ImportObjectsMongo(hierarchy)
 
 }
 
@@ -72,14 +57,7 @@ func ImportInvoiceFromJSON(jsonfile string) {
 		logrus.Fatal(err)
 	}
 	logrus.Println(len(invoice))
-	db, err := model.ConnectStorage(model.MSQL)
-	if err != nil {
-		logrus.Fatal("Error in saving", err)
-	}
-	err = db.Save(invoice)
-	if err != nil {
-		logrus.Fatal(err)
-	}
+	ImportObjectsMongo(invoice)
 
 }
 
@@ -103,5 +81,16 @@ func ImportInvoiceFromJSON(jsonfile string) {
 // 	if err != nil {
 // 		logrus.Fatal(err)
 // 	}
+
+func ImportObjectsMongo(obj interface{}) {
+	mongo, err := model.ConnectStorage(model.MongoDB)
+	if err != nil {
+		logrus.Fatal("Import to MongoDB failed: ", err)
+	}
+	err = mongo.Save(obj)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+}
 
 // }
