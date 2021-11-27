@@ -1,6 +1,6 @@
 package model
 
 type Person struct {
-	Name      string
-	FirstName string
+	Name      string `bson:"Name"`
+	FirstName string `bson:"FirstName"`
 }

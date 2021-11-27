@@ -35,12 +35,24 @@ func ConnectMongo(conf *MongoConfig) (Database, error) {
 func (mongo *MyMongo) Save(obj interface{}) error {
 	db := mongo.conn.Database("my_go_db")
 	coll := db.Collection("persons")
+	t := reflect.TypeOf(obj)
+	switch t.Kind() {
+	case reflect.Slice:
+		v := reflect.ValueOf(obj)
+		objs := make([]interface{}, v.Len(), v.Len())
+		for i := 0; i < v.Len(); i++ {
+			objs[i] = v.Index(i).Interface()
+		}
+		logrus.Println(objs)
+		res, err := coll.InsertMany(*mongo.context, objs)
+		logrus.Print(res)
+		if err != nil {
+			logrus.Fatal("Error when opening file: ", err)
+		}
+	case reflect.Array:
 
-	res, err := coll.InsertOne(*mongo.context, obj.data)
-	if err != nil {
-		logrus.Fatal("Error when opening file: ", err)
+	default:
 	}
-	logrus.Print(res.InsertedID)
 	return nil
 }
 

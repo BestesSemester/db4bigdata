@@ -15,7 +15,7 @@ func main() {
 	//
 	// p := model.Person{Name: "Scheffel"}
 
-	importer.ImportPersonsFromJSON("C:/Users/Kevin Sommer/Documents/Studium/db4bigdata/generators/output_data/persons.json")
+	importer.ImportPersonsFromJSON("./generators/output_data/persons.json")
 
 	// mongo.Save()
 
