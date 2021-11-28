@@ -12,6 +12,7 @@ func main() {
 	util.SetupLogs()
 	pm := performancemeasurement.New(model.MSQL, "horrorlog")
 	pm.MeasureCPU("test")
+	pm.MeasureRAM("test")
 	test(pm)
 	pm.Run()
 }
