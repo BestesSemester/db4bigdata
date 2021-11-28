@@ -87,8 +87,9 @@ if create_adress_store:
 df_adress_store = pd.read_json(r'./adresses.json', 
                                orient='records',  dtype = {"ZipCode": object, "Vorwahl": object})
 
-
-
+#%% load roles
+roles = pd.read_json("input_data/roles.json").transpose()
+print(roles)
 #%% create persons
 
 house_numbers = geom.rvs(0.03, size = n_persons) 
@@ -217,10 +218,19 @@ df_invoices['Agent']   =  list(df_persons[df_persons.Role!=0].sample(n_invoices,
 df_invoices['InvoiceID'] = df_invoices.index
 
 
-
-
+def all_but(*names, df):
+    names = set(names)
+    res = [item for item in df if item not in names]
+    return res
 #%% write json-files
-out_json = df_persons.to_json(orient='records')
+out_json = (df_persons
+    .groupby(all_but("Role", df=df_persons))
+    .apply(
+        lambda x: {"RoleID": roles[["RoleID"]].iloc[x["Role"].values[0]][0], "Description": roles[["Description"]].iloc[x["Role"].values[0]][0]}
+    )
+    .reset_index()
+    .rename(columns={0:'Role'})
+    .to_json(orient='records'))
 with open(r'./output_data/persons.json', 'w') as f:
     f.write(out_json)
     
