@@ -12,7 +12,7 @@ import json
 import pandas as pd
 import numpy as np
 import random
-import datetime 
+import datetime
 from scipy.stats import geom
 from tqdm import tqdm
 
@@ -128,13 +128,13 @@ start_date = datetime.date(1940, 1, 1)
 end_date = datetime.date(1980, 1, 1)
 time_between_dates = end_date - start_date
 days_between_dates = time_between_dates.days
-df_persons['BirthDate'] = df_persons.apply(lambda x: start_date + datetime.timedelta(days=random.randrange(days_between_dates)) , axis = 1)
+df_persons['BirthDate'] = df_persons.apply(lambda x: datetime.datetime.combine(start_date + datetime.timedelta(days=random.randrange(days_between_dates)), datetime.datetime.min.time()).isoformat(), axis = 1)
 
 start_date = datetime.date(2000, 1, 1)
 end_date = datetime.date(2009, 12, 31)
 time_between_dates = end_date - start_date
 days_between_dates = time_between_dates.days
-df_persons['RegistrationDate'] = df_persons.apply(lambda x: start_date + datetime.timedelta(days=random.randrange(days_between_dates)) , axis = 1)
+df_persons['RegistrationDate'] = df_persons.apply(lambda x: datetime.datetime.combine(start_date + datetime.timedelta(days=random.randrange(days_between_dates)), datetime.datetime.min.time()).isoformat() , axis = 1)
 df_persons['PhoneNumber'] = df_persons.apply(lambda x: str(x['PhoneNumber_pre']) +' '+ str(random.randint(1000, 9999999)), axis = 1)
 
 locale_list = ['de_DE']
@@ -187,7 +187,7 @@ for level in agent_hierarchy_n:
                 lst_supervisors.extend( [lst_agents[-1]]  * agent_hierarchy_n[level+1][j + supervisor_offset]  )
         supervisor_offset = supervisor_offset + agent_nr
 
-modification_date = datetime.date(2021, 1, 1)
+modification_date = datetime.datetime(2021, 1, 1).isoformat()
 df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'Supervisor': lst_supervisors, 
                              'ModificationDate': modification_date, 'AgentStatus': 1})
     
@@ -210,8 +210,9 @@ end_date = datetime.date(2020, 12, 31)
 
 time_between_dates = end_date - start_date
 days_between_dates = time_between_dates.days
-df_invoices['InvoiceDate'] = df_invoices.apply(lambda x: start_date + datetime.timedelta(days=random.randrange(days_between_dates)) , axis = 1)
-df_invoices['PayDate']  = df_invoices['InvoiceDate'] + datetime.timedelta(days=10)
+df_invoices['InvoiceDate'] = df_invoices.apply(lambda x: (start_date + datetime.timedelta(days=random.randrange(days_between_dates))) , axis = 1)
+df_invoices['PayDate']  = df_invoices['InvoiceDate'].apply(lambda day: datetime.datetime.combine(day + datetime.timedelta(days=10), datetime.datetime.min.time()).isoformat())
+df_invoices['InvoiceDate'] = df_invoices['InvoiceDate'].apply(lambda day: datetime.datetime.combine(day, datetime.datetime.min.time()).isoformat())
 df_invoices['OpenSum'] = 0
 df_invoices['Customer'] = list(df_persons[df_persons.Role==0].sample(n_invoices, replace = True)['PersonID'])
 df_invoices['Agent']   =  list(df_persons[df_persons.Role!=0].sample(n_invoices, replace = True)['PersonID'])
