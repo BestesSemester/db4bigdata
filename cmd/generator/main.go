@@ -1,6 +1,7 @@
 package main
 
 import (
+	"git.sys-tem.org/caos/db4bigdata/internal/importer"
 	"git.sys-tem.org/caos/db4bigdata/internal/model"
 	"git.sys-tem.org/caos/db4bigdata/internal/util"
 
@@ -14,4 +15,5 @@ func main() {
 	mssql, _ := model.ConnectStorage(model.MSQL)
 	p := model.Person{Name: "Scheffel"}
 	mssql.Find("", &p)
+	importer.ImportPersonsFromJSON("generators/output_data/persons.json")
 }

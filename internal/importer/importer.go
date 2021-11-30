@@ -88,7 +88,7 @@ func ImportProvisiondistributionFromJSON(jsonfile string) {
 	if err != nil {
 		logrus.Fatal("Error when opening file: ", err)
 	}
-	var provdib []model.Provdib
+	var provdib []model.Provision
 	err = json.Unmarshal(content, &provdib)
 	if err != nil {
 		logrus.Fatal(err)
