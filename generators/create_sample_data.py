@@ -12,7 +12,7 @@ import json
 import pandas as pd
 import numpy as np
 import random
-import datetime 
+import datetime
 from scipy.stats import geom
 from tqdm import tqdm
 
@@ -66,7 +66,7 @@ if create_adress_store:
     df_streets_and_squares.rename(columns={'properties.NAME': 'Street', 
                                            'properties.GEMEINDE': 'Residence', 'properties.PLZ': 'ZipCode'}, inplace = True)
     df_streets_and_squares['ZipCode'] = df_streets_and_squares.apply(lambda x: x['ZipCode'][0:(x['ZipCode'].find(','))] if ',' in x['ZipCode'] else x['ZipCode'], axis = 1)
-    df_streets_and_squares['ZipCode'] = df_streets_and_squares['ZipCode'].astype(int)
+    df_streets_and_squares['ZipCode'] = df_streets_and_squares['ZipCode'].apply(lambda zc: int(zc))
     df_streets_and_squares.drop_duplicates( keep='first', inplace = True)
 
     df_plz_vorwahl = pd.read_csv(r"./input_data/orte_de_plz_vorwahl.csv", 
@@ -87,8 +87,9 @@ if create_adress_store:
 df_adress_store = pd.read_json(r'./adresses.json', 
                                orient='records',  dtype = {"ZipCode": object, "Vorwahl": object})
 
-
-
+#%% load roles
+roles = pd.read_json("input_data/roles.json").transpose()
+print(roles)
 #%% create persons
 
 house_numbers = geom.rvs(0.03, size = n_persons) 
@@ -116,7 +117,7 @@ df_first_names = df_first_names_f.sample(n=n_persons_f, replace=True, weights=ge
 df_persons['FirstName']= df_first_names.iloc[:,0]
 df_persons['Street']= df_sample_adresses.loc[:,'Street'].values
 df_persons['Residence']= df_sample_adresses.loc[:,'Residence'].values
-df_persons['ZipCode']= df_sample_adresses.loc[:,'ZipCode'].values
+df_persons['ZipCode']= df_sample_adresses.loc[:,'ZipCode'].values.astype(int)
 df_persons['PhoneNumber_pre']= df_sample_adresses.loc[:,'Vorwahl'].values
 df_persons['HouseNumber_onlyNumber']= house_numbers
 df_persons['house_numbers_postfix_index'] = house_numbers_postfix_index
@@ -127,13 +128,13 @@ start_date = datetime.date(1940, 1, 1)
 end_date = datetime.date(1980, 1, 1)
 time_between_dates = end_date - start_date
 days_between_dates = time_between_dates.days
-df_persons['BirthDate'] = df_persons.apply(lambda x: start_date + datetime.timedelta(days=random.randrange(days_between_dates)) , axis = 1)
+df_persons['BirthDate'] = df_persons.apply(lambda x: datetime.datetime.combine(start_date + datetime.timedelta(days=random.randrange(days_between_dates)), datetime.datetime.min.time()).isoformat() + "Z", axis = 1)
 
 start_date = datetime.date(2000, 1, 1)
 end_date = datetime.date(2009, 12, 31)
 time_between_dates = end_date - start_date
 days_between_dates = time_between_dates.days
-df_persons['RegistrationDate'] = df_persons.apply(lambda x: start_date + datetime.timedelta(days=random.randrange(days_between_dates)) , axis = 1)
+df_persons['RegistrationDate'] = df_persons.apply(lambda x: datetime.datetime.combine(start_date + datetime.timedelta(days=random.randrange(days_between_dates)), datetime.datetime.min.time()).isoformat() + "Z" , axis = 1)
 df_persons['PhoneNumber'] = df_persons.apply(lambda x: str(x['PhoneNumber_pre']) +' '+ str(random.randint(1000, 9999999)), axis = 1)
 
 locale_list = ['de_DE']
@@ -186,7 +187,7 @@ for level in agent_hierarchy_n:
                 lst_supervisors.extend( [lst_agents[-1]]  * agent_hierarchy_n[level+1][j + supervisor_offset]  )
         supervisor_offset = supervisor_offset + agent_nr
 
-modification_date = datetime.date(2021, 1, 1)
+modification_date = datetime.datetime(2021, 1, 1).isoformat() + "Z"
 df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'Supervisor': lst_supervisors, 
                              'ModificationDate': modification_date, 'AgentStatus': 1})
     
@@ -209,18 +210,28 @@ end_date = datetime.date(2020, 12, 31)
 
 time_between_dates = end_date - start_date
 days_between_dates = time_between_dates.days
-df_invoices['InvoiceDate'] = df_invoices.apply(lambda x: start_date + datetime.timedelta(days=random.randrange(days_between_dates)) , axis = 1)
-df_invoices['PayDate']  = df_invoices['InvoiceDate'] + datetime.timedelta(days=10)
+df_invoices['InvoiceDate'] = df_invoices.apply(lambda x: (start_date + datetime.timedelta(days=random.randrange(days_between_dates))) , axis = 1)
+df_invoices['PayDate']  = df_invoices['InvoiceDate'].apply(lambda day: datetime.datetime.combine(day + datetime.timedelta(days=10), datetime.datetime.min.time()).isoformat() + "Z")
+df_invoices['InvoiceDate'] = df_invoices['InvoiceDate'].apply(lambda day: datetime.datetime.combine(day, datetime.datetime.min.time()).isoformat() + "Z")
 df_invoices['OpenSum'] = 0
 df_invoices['Customer'] = list(df_persons[df_persons.Role==0].sample(n_invoices, replace = True)['PersonID'])
 df_invoices['Agent']   =  list(df_persons[df_persons.Role!=0].sample(n_invoices, replace = True)['PersonID'])
 df_invoices['InvoiceID'] = df_invoices.index
 
 
-
-
+def all_but(*names, df):
+    names = set(names)
+    res = [item for item in df if item not in names]
+    return res
 #%% write json-files
-out_json = df_persons.to_json(orient='records')
+out_json = (df_persons
+    .groupby(all_but("Role", df=df_persons))
+    .apply(
+        lambda x: {"RoleID": roles[["RoleID"]].iloc[x["Role"].values[0]][0], "Description": roles[["Description"]].iloc[x["Role"].values[0]][0]}
+    )
+    .reset_index()
+    .rename(columns={0:'Role'})
+    .to_json(orient='records'))
 with open(r'./output_data/persons.json', 'w') as f:
     f.write(out_json)
     
