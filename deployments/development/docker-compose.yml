@@ -21,3 +21,21 @@ services:
       ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
     depends_on:
       - "mongo"
+
+  neo4j:
+    image: neo4j:3.5.3
+    volumes:
+      - /databases/neo4j:/data
+    ports:
+      - 7474:7474
+      - 7687:7687
+
+  mssql: 
+    image: mcr.microsoft.com/mssql/server
+    environment:
+      SA_PASSWORD: "1234myFancyPasswort"
+      ACCEPT_EULA: "Y"
+    ports:
+      - 1433:1433
+      - 1431:1431
+      - 1434:1434 
