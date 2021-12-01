@@ -1,7 +1,12 @@
 package model
 
+import "time"
+
 type Hierarchy struct {
-	Agent Person
+	Agent            Person
+	Supervisor       Person
+	ModificationDate time.Time
+	AgentStatus      Status
 }
 
 type Status int

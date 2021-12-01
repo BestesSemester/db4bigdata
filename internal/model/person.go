@@ -1,6 +1,18 @@
 package model
 
+import "time"
+
 type Person struct {
-	Name      string `bson:"Name"`
-	FirstName string `bson:"FirstName"`
+	CustomerID       int
+	Name             string
+	FirstName        string
+	Street           string
+	HouseNumber      string
+	ZipCode          int
+	Residence        string
+	PhoneNumber      string
+	EmailAddress     string
+	BirthDate        time.Time
+	RegistrationDate time.Time
+	Role             Role
 }

@@ -15,9 +15,9 @@ func main() {
 	//
 	// p := model.Person{Name: "Scheffel"}
 
-	importer.ImportPersonsFromJSON("C:/Users/Kevin Sommer/Documents/Studium/db4bigdata/generators/output_data/persons.json")
-	importer.ImportInvoiceFromJSON("C:/Users/Kevin Sommer/Documents/Studium/db4bigdata/generators/output_data/invoices.json")
-	// importer.ImportHierarchyFromJSON("C:/Users/Kevin Sommer/Documents/Studium/db4bigdata/generators/output_data/hierarchy.json")
+	// importer.ImportPersonsFromJSON("C:/Users/Kevin Sommer/Documents/Studium/db4bigdata/generators/output_data/persons.json")
+	// importer.ImportInvoiceFromJSON("C:/Users/Kevin Sommer/Documents/Studium/db4bigdata/generators/output_data/invoices.json")
+	importer.ImportHierarchyFromJSON("C:/Users/Kevin Sommer/Documents/Studium/db4bigdata/generators/output_data/hierarchy.json")
 
 	// mongo.Save()
 
