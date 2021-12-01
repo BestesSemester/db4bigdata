@@ -25,15 +25,7 @@ func ImportPersonsFromJSON(jsonfile string) {
 		logrus.Fatal(err)
 	}
 	logrus.Println(len(persons))
-	db, err := model.ConnectStorage(model.MSQL)
-	if err != nil {
-		logrus.Fatal("Error in saving", err)
-	}
-	err = db.Save(persons)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
+	ImportObjectsMongo(persons)
 }
 
 func ImportHierarchyFromJSON(jsonfile string) {
@@ -48,15 +40,7 @@ func ImportHierarchyFromJSON(jsonfile string) {
 		logrus.Fatal(err)
 	}
 	logrus.Println(len(hierarchy))
-	db, err := model.ConnectStorage(model.MSQL)
-	if err != nil {
-		logrus.Fatal("Error in saving", err)
-	}
-	err = db.Save(hierarchy)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
+	ImportObjectsMongo(hierarchy)
 }
 
 func ImportInvoiceFromJSON(jsonfile string) {
@@ -71,36 +55,39 @@ func ImportInvoiceFromJSON(jsonfile string) {
 		logrus.Fatal(err)
 	}
 	logrus.Println(len(invoice))
-	db, err := model.ConnectStorage(model.MSQL)
-	if err != nil {
-		logrus.Fatal("Error in saving", err)
-	}
-	err = db.Save(invoice)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
+	ImportObjectsMongo(invoice)
 }
 
-func ImportProvisiondistributionFromJSON(jsonfile string) {
-	// Let's first read the `config.json` file
-	content, err := ioutil.ReadFile(jsonfile)
-	if err != nil {
-		logrus.Fatal("Error when opening file: ", err)
-	}
-	var provdib []model.Provision
-	err = json.Unmarshal(content, &provdib)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	logrus.Println(len(provdib))
-	db, err := model.ConnectStorage(model.MSQL)
-	if err != nil {
-		logrus.Fatal("Error in saving", err)
-	}
-	err = db.Save(provdib)
-	if err != nil {
-		logrus.Fatal(err)
-	}
+// func ImportProvisiondistributionFromJSON(jsonfile string) {
+// 	// Let's first read the `config.json` file
+// 	content, err := ioutil.ReadFile(jsonfile)
+// 	if err != nil {
+// 		logrus.Fatal("Error when opening file: ", err)
+// 	}
+// 	var provdib []model.Provdib
+// 	err = json.Unmarshal(content, &provdib)
+// 	if err != nil {
+// 		logrus.Fatal(err)
+// 	}
+// 	logrus.Println(len(provdib))
+// 	db, err := model.ConnectStorage(model.MSQL)
+// 	if err != nil {
+// 		logrus.Fatal("Error in saving", err)
+// 	}
+// 	err = db.Save(provdib)
+// 	if err != nil {
+// 		logrus.Fatal(err)
+// 	}
 
+func ImportObjectsMongo(obj interface{}) {
+	mongo, err := model.ConnectStorage(model.MongoDB)
+	if err != nil {
+		logrus.Fatal("Import to MongoDB failed: ", err)
+	}
+	err = mongo.Save(obj)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 }
+
+// }
