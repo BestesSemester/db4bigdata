@@ -117,7 +117,7 @@ df_first_names = df_first_names_f.sample(n=n_persons_f, replace=True, weights=ge
 df_persons['FirstName']= df_first_names.iloc[:,0]
 df_persons['Street']= df_sample_adresses.loc[:,'Street'].values
 df_persons['Residence']= df_sample_adresses.loc[:,'Residence'].values
-df_persons['ZipCode']= df_sample_adresses.loc[:,'ZipCode'].values.astype(int)
+df_persons['ZipCode']= df_sample_adresses.loc[:,'ZipCode'].values
 df_persons['PhoneNumber_pre']= df_sample_adresses.loc[:,'Vorwahl'].values
 df_persons['HouseNumber_onlyNumber']= house_numbers
 df_persons['house_numbers_postfix_index'] = house_numbers_postfix_index
