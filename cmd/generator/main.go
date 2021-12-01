@@ -1,7 +1,7 @@
 package main
 
 import (
-	"git.sys-tem.org/caos/db4bigdata/internal/importer"
+	// "git.sys-tem.org/caos/db4bigdata/internal/importer"
 	"git.sys-tem.org/caos/db4bigdata/internal/util"
 
 	"github.com/sirupsen/logrus"
@@ -15,9 +15,11 @@ func main() {
 	//
 	// p := model.Person{Name: "Scheffel"}
 
-	// importer.ImportPersonsFromJSON("C:/Users/Kevin Sommer/Documents/Studium/db4bigdata/generators/output_data/persons.json")
-	// importer.ImportInvoiceFromJSON("C:/Users/Kevin Sommer/Documents/Studium/db4bigdata/generators/output_data/invoices.json")
-	importer.ImportHierarchyFromJSON("C:/Users/Kevin Sommer/Documents/Studium/db4bigdata/generators/output_data/hierarchy.json")
+	// Call importer
+	// **** Following lines just works in debug mode ****
+	// importer.ImportPersonsFromJSON("./../../generators/output_data/persons.json")
+	// importer.ImportInvoiceFromJSON("./../../generators/output_data/invoices.json")
+	// importer.ImportHierarchyFromJSON("./../../generators/output_data/hierarchy.json")
 
 	// mongo.Save()
 

@@ -26,7 +26,6 @@ func ImportPersonsFromJSON(jsonfile string) {
 	}
 	logrus.Println(len(persons))
 	ImportObjectsMongo(persons)
-
 }
 
 func ImportHierarchyFromJSON(jsonfile string) {
@@ -42,7 +41,6 @@ func ImportHierarchyFromJSON(jsonfile string) {
 	}
 	logrus.Println(len(hierarchy))
 	ImportObjectsMongo(hierarchy)
-
 }
 
 func ImportInvoiceFromJSON(jsonfile string) {
@@ -58,7 +56,6 @@ func ImportInvoiceFromJSON(jsonfile string) {
 	}
 	logrus.Println(len(invoice))
 	ImportObjectsMongo(invoice)
-
 }
 
 // func ImportProvisiondistributionFromJSON(jsonfile string) {
