@@ -14,8 +14,8 @@ import (
 type PerformanceMeasurement struct {
 	DatabaseType            model.StorageType
 	LogFilePath             string
-	startMeasureCPUChannel  chan string
-	startMeasureRAMChannel	chan string
+	startMeasureCPUChannel  chan TimeMeasurementParameters
+	startMeasureRAMChannel  chan string
 	startMeasureTimeChannel chan TimeMeasurementParameters
 	stopChannel             chan bool
 	logChannel              chan string
@@ -23,8 +23,9 @@ type PerformanceMeasurement struct {
 }
 
 type TimeMeasurementParameters struct {
-	StartTime time.Time
-	Operation string
+	StartTime   time.Time
+	Operation   string
+	StopChannel chan bool
 }
 
 func New(databaseType model.StorageType, logFilePath string) PerformanceMeasurement {
@@ -32,7 +33,7 @@ func New(databaseType model.StorageType, logFilePath string) PerformanceMeasurem
 	p := PerformanceMeasurement{DatabaseType: databaseType, LogFilePath: logFilePath}
 	p.startMeasureTimeChannel = make(chan TimeMeasurementParameters)
 	p.startMeasureCPUChannel = make(chan string)
-	p.startMeasureRAMChannel =make(chan string)
+	p.startMeasureRAMChannel = make(chan string)
 	p.stopChannel = make(chan bool)
 	p.logChannel = make(chan string)
 	p.processes = 0
@@ -84,31 +85,40 @@ func (p *PerformanceMeasurement) ReadMeasureTime() {
 }
 func (p *PerformanceMeasurement) ReadMeasureRAM() {
 	for {
-		operation, more := <- p.startMeasureRAMChannel
+		operation, more := <-p.startMeasureRAMChannel
 		if !more {
 			p.stopChannel <- true
 		}
 		var m runtime.MemStats
 		runtime.ReadMemStats(&m)
 		logrus.Println("measuring RAM usage")
-		prtstr := fmt.Sprintf("Alloc = %v MiB for %s.", m.Alloc / 1024 /1024, operation)
+		prtstr := fmt.Sprintf("Alloc = %v MiB for %s.", m.Alloc/1024/1024, operation)
 		p.writeToFile(prtstr)
 		logrus.Println(prtstr)
 	}
 
 }
+
 // ReadMeasureCPU - Measures how much CPU power was needed to complete the operation.
 func (p *PerformanceMeasurement) ReadMeasureCPU() {
 	for {
-		operation, more := <-p.startMeasureCPUChannel
+		param, more := <-p.startMeasureCPUChannel
+		operation := param.Operation
 		if !more {
 			p.stopChannel <- true
 		}
-		percent, _ := cpu.Percent(0, true)
-		logrus.Println("measuring cpu usage")
-		prtstr := fmt.Sprintf("It took %.2f cpu power to do the %s-operation", percent[0], operation)
-		p.writeToFile(prtstr)
-		logrus.Println(prtstr)
+		for {
+			switch <-param.StopChannel {
+			case true:
+				return
+			default:
+			}
+			percent, _ := cpu.Percent(0, true)
+			logrus.Println("measuring cpu usage")
+			prtstr := fmt.Sprintf("It took %.2f cpu power to do the %s-operation", percent[0], operation)
+			p.writeToFile(prtstr)
+			logrus.Println(prtstr)
+		}
 	}
 }
 
