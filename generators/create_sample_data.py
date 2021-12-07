@@ -12,13 +12,14 @@ import json
 import pandas as pd
 import numpy as np
 import random
-import datetime 
+import datetime
 from scipy.stats import geom
 from tqdm import tqdm
 
 some_seed = 42
 np.random.seed(some_seed)
-n_persons = 10000
+n_adresses = 100000
+n_persons  = 10000
 n_invoices = 1000
 min_net_sum = 20
 
@@ -39,46 +40,62 @@ def jsonobj_hook(obj):
 
 
 #%% read geojson-files with adress data from Germany (takes some minutes)
-path_to_file = r'./input_data/squares.geojson'
-with open(path_to_file, encoding='utf-8') as f:
-   strasse_ort_01 = json.load(f, object_hook=jsonobj_hook)
-df_squares = pd.json_normalize(strasse_ort_01['features'])
-df_squares = df_squares[ df_squares['properties.HIGHWAY'].str.contains('residential')   |
-                         df_squares['properties.HIGHWAY'].str.contains('living_street') |
-                         df_squares['properties.HIGHWAY'].str.contains('pedestrian')     ]
-df_squares = df_squares[ df_squares['properties.NAME'].str.len().between(2,50)]
+create_adress_store = False
+if create_adress_store:
+    path_to_file = r'./input_data/squares.geojson'
+    with open(path_to_file, encoding='utf-8') as f:
+       strasse_ort_01 = json.load(f, object_hook=jsonobj_hook)
+    df_squares = pd.json_normalize(strasse_ort_01['features'])
+    df_squares = df_squares[ df_squares['properties.HIGHWAY'].str.contains('residential')   |
+                             df_squares['properties.HIGHWAY'].str.contains('living_street') |
+                             df_squares['properties.HIGHWAY'].str.contains('pedestrian')     ]
+    df_squares = df_squares[ df_squares['properties.NAME'].str.len().between(2,50)]
 
 
-path_to_file = r'./input_data/streets.geojson'
-with open(path_to_file, encoding='utf-8') as f:
-    strasse_ort_02 = json.load(f, object_hook=jsonobj_hook)
-df_streets = pd.json_normalize(strasse_ort_02['features'])
-df_streets = df_streets[ df_streets['properties.HIGHWAY'].str.contains('residential')   |
-                         df_streets['properties.HIGHWAY'].str.contains('living_street') |
-                         df_streets['properties.HIGHWAY'].str.contains('pedestrian')     ]
-df_streets = df_streets[ df_streets['properties.NAME'].str.len().between(2,50)]
+    path_to_file = r'./input_data/streets.geojson'
+    with open(path_to_file, encoding='utf-8') as f:
+        strasse_ort_02 = json.load(f, object_hook=jsonobj_hook)
+    df_streets = pd.json_normalize(strasse_ort_02['features'])
+    df_streets = df_streets[ df_streets['properties.HIGHWAY'].str.contains('residential')   |
+                             df_streets['properties.HIGHWAY'].str.contains('living_street') |
+                             df_streets['properties.HIGHWAY'].str.contains('pedestrian')     ]
+    df_streets = df_streets[ df_streets['properties.NAME'].str.len().between(2,50)]
 
-df_streets_and_squares = df_streets.append(df_squares, ignore_index=True)
-df_streets_and_squares = df_streets_and_squares[['properties.NAME', 'properties.GEMEINDE', 'properties.PLZ']]
-df_streets_and_squares.rename(columns={'properties.NAME': 'Street', 
-                                       'properties.GEMEINDE': 'Residence', 'properties.PLZ': 'ZipCode'}, inplace = True)
-df_streets_and_squares['ZipCode'] = df_streets_and_squares.apply(lambda x: x['ZipCode'][0:(x['ZipCode'].find(','))] if ',' in x['ZipCode'] else x['ZipCode'], axis = 1)
-df_streets_and_squares['ZipCode'] = df_streets_and_squares['ZipCode'].astype(int)
-df_streets_and_squares.drop_duplicates( keep='first', inplace = True)
+    df_streets_and_squares = df_streets.append(df_squares, ignore_index=True)
+    df_streets_and_squares = df_streets_and_squares[['properties.NAME', 'properties.GEMEINDE', 'properties.PLZ']]
+    df_streets_and_squares.rename(columns={'properties.NAME': 'Street', 
+                                           'properties.GEMEINDE': 'Residence', 'properties.PLZ': 'ZipCode'}, inplace = True)
+    df_streets_and_squares['ZipCode'] = df_streets_and_squares.apply(lambda x: x['ZipCode'][0:(x['ZipCode'].find(','))] if ',' in x['ZipCode'] else x['ZipCode'], axis = 1)
+    df_streets_and_squares['ZipCode'] = df_streets_and_squares['ZipCode'].apply(lambda zc: int(zc))
+    df_streets_and_squares.drop_duplicates( keep='first', inplace = True)
 
-df_plz_vorwahl = pd.read_csv(r"./input_data/orte_de_plz_vorwahl.csv", 
-                             sep = ';', usecols=['Plz', 'Vorwahl'], dtype={'Plz': np.int64, 'Vorwahl': str})
-df_plz_vorwahl.drop_duplicates( subset = 'Plz', keep='first', inplace = True)
-df_plz_vorwahl.dropna(inplace=True)
+    df_plz_vorwahl = pd.read_csv(r"./input_data/orte_de_plz_vorwahl.csv", 
+                                 sep = ';', usecols=['Plz', 'Vorwahl'], dtype={'Plz': np.int64, 'Vorwahl': str})
+    df_plz_vorwahl.drop_duplicates( subset = 'Plz', keep='first', inplace = True)
+    df_plz_vorwahl.dropna(inplace=True)
 
-df_streets_and_squares_vorwahl = pd.merge(df_streets_and_squares, df_plz_vorwahl, left_on=['ZipCode'], right_on=['Plz'], how='inner')
+    df_streets_and_squares_vorwahl = pd.merge(df_streets_and_squares, df_plz_vorwahl, left_on=['ZipCode'], right_on=['Plz'], how='inner')
+    df_streets_and_squares_vorwahl = df_streets_and_squares_vorwahl.drop('Plz', axis=1)
+    df_sample_adresses = df_streets_and_squares_vorwahl.sample(n=n_adresses)
+    
+    out_json = df_sample_adresses.to_json(orient='records')
+    with open(r'.\adresses.json', 'w') as f:
+        f.write(out_json)
+ 
+#%% load adresses
 
+df_adress_store = pd.read_json(r'./adresses.json', 
+                               orient='records',  dtype = {"ZipCode": object, "Vorwahl": object})
+
+#%% load roles
+roles = pd.read_json("input_data/roles.json").transpose()
+print(roles)
 #%% create persons
 
 house_numbers = geom.rvs(0.03, size = n_persons) 
 ascii_lowercase = [chr(i) for i in range(ord('a'), ord('z') + 1)]
 postfixes =[' '] + ascii_lowercase
-df_sample_adresses = df_streets_and_squares_vorwahl.sample(n=n_persons)
+df_sample_adresses = df_adress_store.sample(n=n_persons, replace=True)
 house_numbers_postfix_index =(geom.rvs(0.9, loc=-1, size = n_persons))
 
 df_first_names_m = pd.read_csv(r"./input_data/vornamen_m.txt", names=['FirstName'], skiprows = 1)
@@ -111,13 +128,13 @@ start_date = datetime.date(1940, 1, 1)
 end_date = datetime.date(1980, 1, 1)
 time_between_dates = end_date - start_date
 days_between_dates = time_between_dates.days
-df_persons['BirthDate'] = df_persons.apply(lambda x: start_date + datetime.timedelta(days=random.randrange(days_between_dates)) , axis = 1)
+df_persons['BirthDate'] = df_persons.apply(lambda x: datetime.datetime.combine(start_date + datetime.timedelta(days=random.randrange(days_between_dates)), datetime.datetime.min.time()).isoformat() + "Z", axis = 1)
 
 start_date = datetime.date(2000, 1, 1)
 end_date = datetime.date(2009, 12, 31)
 time_between_dates = end_date - start_date
 days_between_dates = time_between_dates.days
-df_persons['RegistrationDate'] = df_persons.apply(lambda x: start_date + datetime.timedelta(days=random.randrange(days_between_dates)) , axis = 1)
+df_persons['RegistrationDate'] = df_persons.apply(lambda x: datetime.datetime.combine(start_date + datetime.timedelta(days=random.randrange(days_between_dates)), datetime.datetime.min.time()).isoformat() + "Z" , axis = 1)
 df_persons['PhoneNumber'] = df_persons.apply(lambda x: str(x['PhoneNumber_pre']) +' '+ str(random.randint(1000, 9999999)), axis = 1)
 
 locale_list = ['de_DE']
@@ -170,7 +187,7 @@ for level in agent_hierarchy_n:
                 lst_supervisors.extend( [lst_agents[-1]]  * agent_hierarchy_n[level+1][j + supervisor_offset]  )
         supervisor_offset = supervisor_offset + agent_nr
 
-modification_date = datetime.date(2021, 1, 1)
+modification_date = datetime.datetime(2021, 1, 1).isoformat() + "Z"
 df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'Supervisor': lst_supervisors, 
                              'ModificationDate': modification_date, 'AgentStatus': 1})
     
@@ -193,18 +210,28 @@ end_date = datetime.date(2020, 12, 31)
 
 time_between_dates = end_date - start_date
 days_between_dates = time_between_dates.days
-df_invoices['InvoiceDate'] = df_invoices.apply(lambda x: start_date + datetime.timedelta(days=random.randrange(days_between_dates)) , axis = 1)
-df_invoices['PayDate']  = df_invoices['InvoiceDate'] + datetime.timedelta(days=10)
+df_invoices['InvoiceDate'] = df_invoices.apply(lambda x: (start_date + datetime.timedelta(days=random.randrange(days_between_dates))) , axis = 1)
+df_invoices['PayDate']  = df_invoices['InvoiceDate'].apply(lambda day: datetime.datetime.combine(day + datetime.timedelta(days=10), datetime.datetime.min.time()).isoformat() + "Z")
+df_invoices['InvoiceDate'] = df_invoices['InvoiceDate'].apply(lambda day: datetime.datetime.combine(day, datetime.datetime.min.time()).isoformat() + "Z")
 df_invoices['OpenSum'] = 0
 df_invoices['Customer'] = list(df_persons[df_persons.Role==0].sample(n_invoices, replace = True)['PersonID'])
 df_invoices['Agent']   =  list(df_persons[df_persons.Role!=0].sample(n_invoices, replace = True)['PersonID'])
 df_invoices['InvoiceID'] = df_invoices.index
 
 
-
-
+def all_but(*names, df):
+    names = set(names)
+    res = [item for item in df if item not in names]
+    return res
 #%% write json-files
-out_json = df_persons.to_json(orient='records')
+out_json = (df_persons
+    .groupby(all_but("Role", df=df_persons))
+    .apply(
+        lambda x: {"RoleID": roles[["RoleID"]].iloc[x["Role"].values[0]][0], "Description": roles[["Description"]].iloc[x["Role"].values[0]][0]}
+    )
+    .reset_index()
+    .rename(columns={0:'Role'})
+    .to_json(orient='records'))
 with open(r'./output_data/persons.json', 'w') as f:
     f.write(out_json)
     

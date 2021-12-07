@@ -8,7 +8,7 @@ type Person struct {
 	FirstName        string
 	Street           string
 	HouseNumber      string
-	ZipCode          int
+	ZipCode          string
 	Residence        string
 	PhoneNumber      string
 	EmailAddress     string

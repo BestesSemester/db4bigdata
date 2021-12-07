@@ -94,3 +94,13 @@ func getDirectStructFromInterface(inf interface{}) reflect.Value {
 	}
 	return strct
 }
+
+// ins has to be kind of SLICE
+func getInterfaceSliceFromInterface(inf interface{}) []interface{} {
+	v := reflect.ValueOf(inf)
+	objs := make([]interface{}, v.Len(), v.Len())
+	for i := 0; i < v.Len(); i++ {
+		objs[i] = v.Index(i).Interface()
+	}
+	return objs
+}

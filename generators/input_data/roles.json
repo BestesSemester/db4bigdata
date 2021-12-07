@@ -1,0 +1,26 @@
+{
+    "0": {
+        "RoleID": 0,
+        "Description": "normal customer"
+    },
+    "1": {
+        "RoleID": 1,
+        "Description": "agent level 1"
+    },
+    "2": {
+        "RoleID": 2,
+        "Description": "agent level 2"
+    },
+    "3": {
+        "RoleID": 3,
+        "Description": "agent level 3"
+    },
+    "4": {
+        "RoleID": 4,
+        "Description": "agent level 4"
+    },
+    "5": {
+        "RoleID": 5,
+        "Description": "agent level 5"
+    }
+}

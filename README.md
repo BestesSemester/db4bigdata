@@ -3,3 +3,12 @@
 To run locally:  
 `go get -v ./...`  
 `go run cmd/generator/main.go`
+
+# Importer 
+
+To run locally:  
+`go get -v ./...`  
+`go run cmd/generator/main.go`
+
+# To use mongo db functionality:
+`go get go.mongodb.org/mongo-driver/mongo`
