@@ -88,9 +88,13 @@ df_adress_store = pd.read_json(r'./adresses.json',
                                orient='records',  dtype = {"ZipCode": object, "Vorwahl": object})
 
 #%% load roles
-roles = pd.read_json("input_data/roles.json").transpose()
+roles = pd.read_json("input_data/roles.json")
 print(roles)
+
 #%% create persons
+
+def get_role_dict_by_id(id):
+    return roles[id]
 
 house_numbers = geom.rvs(0.03, size = n_persons) 
 ascii_lowercase = [chr(i) for i in range(ord('a'), ord('z') + 1)]
@@ -105,7 +109,7 @@ df_last_names = pd.read_csv(r"./input_data/nachnamen.txt", names=['Name'], skipr
 df_first_names_m.iloc[:,0] = df_first_names_m.apply(lambda x: x[0][0:(x[0].find('/'))] if '/' in x[0] else x[0], axis = 1)
 df_first_names_f.iloc[:,0] = df_first_names_f.apply(lambda x: x[0][0:(x[0].find('/'))] if '/' in x[0] else x[0], axis = 1)
 
-n_persons_f = int( 0.51*n_persons)
+n_persons_f = int(0.51*n_persons)
 n_persons_m = n_persons - n_persons_f
 
 df_persons = df_last_names.sample(n=n_persons, replace=True, weights=geom.pmf(p=0.005, k = np.arange(len(df_last_names.index))))
@@ -143,7 +147,7 @@ Faker.seed(some_seed)
 df_persons['EmailAddress'] = df_persons.apply(lambda x: fake.email(), axis = 1)
 
 df_persons['PersonID'] = df_persons.index
-df_persons['Role']= 0
+df_persons.Role = pd.DataFrame({"Role": get_role_dict_by_id(0) for x in range(n_persons)})
 df_persons.drop(['PhoneNumber_pre', 'house_numbers_postfix_index', 'HouseNumber_onlyNumber', 'house_numbers_postfix'],axis=1,inplace=True)
 #after the drop of unused cols df_persons is complete
 
@@ -179,18 +183,24 @@ for level in agent_hierarchy_n:
         if level == 1:
             lst_supervisors = [-1] * agent_nr
         for j in range(agent_nr):
-            lst_agents.append(df_agents.iloc[pos]['PersonID'])
+            lst_agents.append(df_agents.iloc[pos])
             #df_persons.loc[lst_agents[-1], 'Role']= 1
-            df_persons.loc[lst_agents[-1], 'Role']= level
+            # print(df_persons.loc[lst_agents[-1]["PersonID"]].Role)
+            # df_persons.loc[lst_agents[-1]["PersonID"], "Role"] = ""
+            person = df_persons.iloc[lst_agents[-1]["PersonID"]]
+            person.Role = get_role_dict_by_id(1)
+            df_persons.iloc[lst_agents[-1]["PersonID"]] = person
             pos += 1
             if level < list(agent_hierarchy_n.keys())[-1] :
                 lst_supervisors.extend( [lst_agents[-1]]  * agent_hierarchy_n[level+1][j + supervisor_offset]  )
         supervisor_offset = supervisor_offset + agent_nr
-
 modification_date = datetime.datetime(2021, 1, 1).isoformat() + "Z"
 df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'Supervisor': lst_supervisors, 
                              'ModificationDate': modification_date, 'AgentStatus': 1})
-    
+
+print(type(df_persons.Role["RoleID"]))
+exit()
+print(df_persons[df_persons.Role["RoleID"]!=0].sample(n_invoices, replace = True))
 
 #%% create invoices
 
@@ -214,8 +224,8 @@ df_invoices['InvoiceDate'] = df_invoices.apply(lambda x: (start_date + datetime.
 df_invoices['PayDate']  = df_invoices['InvoiceDate'].apply(lambda day: datetime.datetime.combine(day + datetime.timedelta(days=10), datetime.datetime.min.time()).isoformat() + "Z")
 df_invoices['InvoiceDate'] = df_invoices['InvoiceDate'].apply(lambda day: datetime.datetime.combine(day, datetime.datetime.min.time()).isoformat() + "Z")
 df_invoices['OpenSum'] = 0
-df_invoices['Customer'] = list(df_persons[df_persons.Role==0].sample(n_invoices, replace = True)['PersonID'])
-df_invoices['Agent']   =  list(df_persons[df_persons.Role!=0].sample(n_invoices, replace = True)['PersonID'])
+df_invoices['Customer'] = list(df_persons[df_persons.Role["RoleID"]==0].sample(n_invoices, replace = True).to_dict('records'))
+df_invoices['Agent'] =  list(df_persons[df_persons.Role["RoleID"]!=0].sample(n_invoices, replace = True).to_dict('records'))
 df_invoices['InvoiceID'] = df_invoices.index
 
 
@@ -225,12 +235,12 @@ def all_but(*names, df):
     return res
 #%% write json-files
 out_json = (df_persons
-    .groupby(all_but("Role", df=df_persons))
-    .apply(
-        lambda x: {"RoleID": roles[["RoleID"]].iloc[x["Role"].values[0]][0], "Description": roles[["Description"]].iloc[x["Role"].values[0]][0]}
-    )
-    .reset_index()
-    .rename(columns={0:'Role'})
+    # .groupby(all_but("Role", df=df_persons))
+    # .apply(
+    #     lambda x: {"RoleID": roles[["RoleID"]].iloc[x["Role"].values[0]][0], "Description": roles[["Description"]].iloc[x["Role"].values[0]][0]}
+    # )
+    # .reset_index()
+    # .rename(columns={0:'Role'})
     .to_json(orient='records'))
 with open(r'./output_data/persons.json', 'w') as f:
     f.write(out_json)
