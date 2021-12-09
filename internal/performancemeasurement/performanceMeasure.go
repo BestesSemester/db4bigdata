@@ -19,6 +19,7 @@ type PerformanceMeasurement struct {
 	startMeasureTimeChannel chan TimeMeasurementParameters
 	stopChannel             chan bool
 	stopChannelCPU          chan bool
+	stopChannelRAM          chan bool
 	logChannel              chan string
 }
 
@@ -43,7 +44,6 @@ func New(databaseType model.StorageType, logFilePath string) PerformanceMeasurem
 func (p *PerformanceMeasurement) startWatchers() {
 	go p.startFileWriter()
 	go p.ReadMeasureTime()
-	go p.ReadMeasureRAM()
 }
 
 func (p *PerformanceMeasurement) MeasureTime(now time.Time, operation string) {
@@ -62,8 +62,12 @@ func (p *PerformanceMeasurement) StopMeasureCPU() {
 	p.stopChannelCPU <- true
 }
 
-func (p *PerformanceMeasurement) MeasureRAM(operation string) {
-	p.startMeasureRAMChannel <- operation
+func (p *PerformanceMeasurement) MeasureRAM(operation string, interval time.Duration) {
+	p.stopChannelRAM = make(chan bool)
+	go p.ReadMeasureRAM(operation, interval)
+}
+func (p *PerformanceMeasurement) StopMeasureRAM() {
+	p.stopChannelRAM <- true
 }
 func (p *PerformanceMeasurement) Run() {
 	for {
@@ -80,41 +84,37 @@ func (p *PerformanceMeasurement) ReadMeasureTime() {
 		}
 		elapsed := time.Since(config.StartTime)
 		logrus.Printf("TIME: %s took %s\n", config.Operation, elapsed)
-		prtstr := fmt.Sprintf("It took %s Seconds to do the %s-operation", elapsed, config.Operation)
+		prtstr := fmt.Sprintf("TIME: It took %s Seconds to do the %s-operation", elapsed, config.Operation)
 		p.writeToFile(prtstr)
 	}
 }
-func (p *PerformanceMeasurement) ReadMeasureRAM() {
+func (p *PerformanceMeasurement) ReadMeasureRAM(operation string, interval time.Duration) {
 	for {
-		operation, more := <-p.startMeasureRAMChannel
-		if !more {
-			p.stopChannel <- true
+		select {
+		case <-p.stopChannelRAM:
+			return
+		default:
 		}
 		var m runtime.MemStats
 		runtime.ReadMemStats(&m)
-		logrus.Println("measuring RAM usage")
-		prtstr := fmt.Sprintf("Alloc = %v MiB for %s.", m.Alloc/1024/1024, operation)
+		prtstr := fmt.Sprintf("RAM: Alloc = %v MiB for %s.", m.Alloc/1024/1024, operation)
 		p.writeToFile(prtstr)
 		logrus.Println(prtstr)
+		time.Sleep(interval)
 	}
-
 }
 
 // readMeasureCPU - Measures how much CPU power was needed to complete the operation.
 func (p *PerformanceMeasurement) readMeasureCPU(operation string, interval time.Duration) {
-	logrus.Println("starting cpu measurement")
 	logrus.Println(p.stopChannelCPU)
 	for {
 		select {
 		case <-p.stopChannelCPU:
-			logrus.Println("stopping cpu measurement")
 			return
 		default:
-			logrus.Println("taking default route")
 		}
 		percent, _ := cpu.Percent(0, true)
-		logrus.Println("measuring cpu usage")
-		prtstr := fmt.Sprintf("It took %.2f cpu power to do the %s-operation", percent[0], operation)
+		prtstr := fmt.Sprintf("CPU: It took %.2f percent cpu power to do the %s-operation", percent[0], operation)
 		p.writeToFile(prtstr)
 		logrus.Println(prtstr)
 		time.Sleep(interval)
