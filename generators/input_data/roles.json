@@ -21,6 +21,6 @@
     },
     "5": {
         "RoleID": 5,
-        "Description": "agent level 5"
+        "Description": "agent level 5 or lower"
     }
 }
