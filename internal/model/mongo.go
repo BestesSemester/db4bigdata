@@ -7,10 +7,14 @@ import (
 	"time"
 
 	// "github.com/kamva/mgm/v3"
+	// "git.sys-tem.org/caos/db4bigdata/internal/model"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+const dbName string = "myDB"
 
 type MongoConfig struct {
 	Url      url.URL
@@ -21,6 +25,18 @@ type MongoConfig struct {
 type MyMongo struct {
 	conn    *mongo.Client
 	context *context.Context
+}
+
+// This function is not tested
+func Initialize(mongo *MyMongo) bool {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err := mongo.conn.Database(dbName).Drop(ctx)
+
+	if err == nil {
+		return true
+	}
+	return false
 }
 
 func ConnectMongo(conf *MongoConfig) (Database, error) {
@@ -37,7 +53,7 @@ func ConnectMongo(conf *MongoConfig) (Database, error) {
 // I would call this method import
 func (mongo *MyMongo) Save(obj interface{}) error {
 	t := reflect.TypeOf(obj)
-	coll := mongo.conn.Database("my_go_db").Collection(t.Elem().Name())
+	coll := mongo.conn.Database(dbName).Collection(t.Elem().Name())
 	switch t.Kind() {
 	case reflect.Slice:
 		objs := getInterfaceSliceFromInterface(obj)
@@ -63,10 +79,34 @@ func (mongo *MyMongo) Delete(obj interface{}) error {
 
 // Returns sql-Result
 func (mongo *MyMongo) Find(qry string, target interface{}) error {
-	// mssql.conn.Exec(qry)
-	t := reflect.TypeOf(target)
-	logrus.Println(t)
-	logrus.Println(getAsAbstractStructFieldSetFromInterface(target))
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	coll := mongo.conn.Database(dbName).Collection(("Person"))
+
+	cursor, err := coll.Find(ctx, bson.D{{"name", "Schott"}})
+	if err = cursor.All(ctx, target); err != nil {
+		logrus.Fatal(err)
+	}
+	// logrus.Info(target)
+	// bson.Unmarshal(result, &target)
+	// if res == nil {
+	// 	logrus.Fatal(err)
+	// }
+
+	// defer cursor.Close(ctx)
+
+	// for cursor.Next(ctx) {
+	// 	var result []byte
+	// 	err := cursor.Decode(&result)
+	// 	if err != nil {
+	// 		logrus.Fatal(err)
+	// 	}
+	// 	bson.Unmarshal(result, &target)
+	// 	logrus.Info(target)
+	// }
+	// t := reflect.TypeOf(target)
+	// logrus.Println(t)
+	// logrus.Println(getAsAbstractStructFieldSetFromInterface(target))
 	// logrus.Println(f.Tag.Get("mssql"))
 	return nil
 }
