@@ -83,31 +83,12 @@ func (mongo *MyMongo) Find(qry string, target interface{}) error {
 	defer cancel()
 	coll := mongo.conn.Database(dbName).Collection(("Person"))
 
-	cursor, err := coll.Find(ctx, bson.D{{"name", "Schott"}})
+	cursor, err := coll.Find(ctx, bson.D{{"name", qry}})
 	if err = cursor.All(ctx, target); err != nil {
 		logrus.Fatal(err)
 	}
-	// logrus.Info(target)
-	// bson.Unmarshal(result, &target)
-	// if res == nil {
-	// 	logrus.Fatal(err)
-	// }
+	defer cursor.Close(ctx)
 
-	// defer cursor.Close(ctx)
-
-	// for cursor.Next(ctx) {
-	// 	var result []byte
-	// 	err := cursor.Decode(&result)
-	// 	if err != nil {
-	// 		logrus.Fatal(err)
-	// 	}
-	// 	bson.Unmarshal(result, &target)
-	// 	logrus.Info(target)
-	// }
-	// t := reflect.TypeOf(target)
-	// logrus.Println(t)
-	// logrus.Println(getAsAbstractStructFieldSetFromInterface(target))
-	// logrus.Println(f.Tag.Get("mssql"))
 	return nil
 }
 

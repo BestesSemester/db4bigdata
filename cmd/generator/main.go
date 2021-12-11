@@ -26,8 +26,14 @@ func main() {
 	// importer.ImportPersonsFromJSON("./../../generators/output_data/persons.json")
 	// importer.ImportInvoiceFromJSON("./../../generators/output_data/invoices.json")
 	// importer.ImportHierarchyFromJSON("./../../generators/output_data/hierarchy.json")
-	mongo.Find("", &persons)
-	logrus.Info(persons)
+	name := "Schott"
+	mongo.Find(name, &persons) //Actually just find by name
+
+	for s := range persons {
+		logrus.Info(s)
+	}
+
+	// logrus.Info(persons)
 	// mongo.Save()
 
 	// mssql.Find("", &p)
