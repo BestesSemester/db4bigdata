@@ -27,6 +27,7 @@ func main() {
 	importer.ImportPersonsFromJSON("./generators/output_data/persons.json", &people)
 	// importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json")
 	// importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json")
+	mssql.Migrate(&model.Person{})
 	mssql.Save(&people)
 	// mongo.Save()
 

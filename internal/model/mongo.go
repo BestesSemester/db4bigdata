@@ -59,6 +59,11 @@ func (mongo *MyMongo) Save(obj interface{}) error {
 	return nil
 }
 
+// Migrate - does nothing here
+func (mongo *MyMongo) Migrate(inf ...interface{}) error {
+	return fmt.Errorf("no implementation here")
+}
+
 // TODO: implement delete logic
 func (mongo *MyMongo) SavePersons(obj *[]Person) error {
 	return nil

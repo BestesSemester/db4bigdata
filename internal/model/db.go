@@ -14,6 +14,7 @@ type Database interface {
 	SavePersons(obj *[]Person) error
 	Delete(obj interface{}) error
 	Find(qry string, obj interface{}) error
+	Migrate(inf ...interface{}) error
 	Close() error
 }
 

@@ -32,13 +32,17 @@ func ConnectMsSQL(conf *MsSQLConfig) (Database, error) {
 
 	mssql.db = dbconn
 	mssql.db = mssql.db.Session(&gorm.Session{FullSaveAssociations: true})
-	mssql.migrate()
 	return mssql, nil
 }
 
-func (mssql *MsSQL) migrate() {
-	mssql.db.AutoMigrate(&Role{})
-	mssql.db.AutoMigrate(&Person{})
+// Migrate - migrates the tables for each struct given
+func (mssql *MsSQL) Migrate(inf ...interface{}) error {
+	for _, inf := range inf {
+		if err := mssql.db.AutoMigrate(inf); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Save - used to save - TODO: implement for directs

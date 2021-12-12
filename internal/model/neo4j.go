@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -64,6 +65,10 @@ func (neo4j *Neo4j) Find(qry string, target interface{}) error {
 	logrus.Println(getAsAbstractStructFieldSetFromInterface(target))
 	// logrus.Println(f.Tag.Get("mssql"))
 	return nil
+}
+
+func (neo4j *Neo4j) Migrate(inf ...interface{}) error {
+	return fmt.Errorf("no implementation")
 }
 
 // Closes the database connection (should only be used if you close it on purpose)
