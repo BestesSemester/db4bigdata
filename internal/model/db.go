@@ -129,10 +129,10 @@ func getDirectStructFromInterface(inf interface{}) reflect.Value {
 
 // ins has to be kind of SLICE
 func getInterfaceSliceFromInterface(inf interface{}) []interface{} {
-	v := reflect.ValueOf(inf)
-	objs := make([]interface{}, v.Len(), v.Len())
+	v := getDirectStructFromInterface(inf)
+	var objs []interface{}
 	for i := 0; i < v.Len(); i++ {
-		objs[i] = v.Index(i).Interface()
+		objs = append(objs, v.Index(i).Addr().Interface())
 	}
 	return objs
 }

@@ -41,20 +41,32 @@ func (mssql *MsSQL) migrate() {
 	mssql.db.AutoMigrate(&Person{})
 }
 
-// TODO: implement save logic
+// Save - used to save - TODO: implement for directs
 func (mssql *MsSQL) Save(obj interface{}) error {
+	// check for indirects (pointer)
 	t := getDirectTypeFromInterface(obj)
-	o := getDirectStructFromInterface(obj)
-	logrus.Println(t.Kind())
 	switch t.Kind() {
+	// Check if the interface is iterable
 	case reflect.Slice:
-		for i := 0; i < o.Len(); i++ {
-			iface := o.Index(i).Addr().Interface()
-			mssql.db.Save(iface)
+		if err := mssql.saveIterable(obj); err != nil {
+			return err
 		}
 	case reflect.Array:
-
+		if err := mssql.saveIterable(obj); err != nil {
+			return err
+		}
 	default:
+		mssql.db.Save(obj)
+	}
+	return nil
+}
+
+func (mssql *MsSQL) saveIterable(obj interface{}) error {
+	// iterate over the slice (has to be abstracted, because we are working type-agnostic)
+	objs := getInterfaceSliceFromInterface(obj)
+	for _, o := range objs {
+		// save
+		mssql.db.Save(o)
 	}
 	return nil
 }
