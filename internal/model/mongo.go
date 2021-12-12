@@ -46,6 +46,7 @@ func (mongo *MyMongo) Save(obj interface{}) error {
 		res, err := coll.InsertMany(ctx, objs)
 		if err != nil {
 			logrus.Fatal("Error when inserting objects: ", err)
+			return err
 		} else {
 			logrus.Println("Inserted ", len(res.InsertedIDs), " documents for Collection \"", t.Elem().Name(), "\"")
 		}
