@@ -12,3 +12,6 @@ To run locally:
 
 # To use mongo db functionality:
 `go get go.mongodb.org/mongo-driver/mongo`
+
+# Credentials
+You may store your credentials for databases in environment variables or in ".env".
