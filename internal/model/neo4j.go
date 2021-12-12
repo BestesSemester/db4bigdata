@@ -3,7 +3,7 @@ package model
 import "net/url"
 
 type Neo4jConfig struct {
-	Url      url.URL
+	URL      url.URL
 	UserName string
 	Password string
 }

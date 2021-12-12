@@ -10,7 +10,7 @@ import (
 )
 
 type MsSQLConfig struct {
-	Url      url.URL
+	URL      url.URL
 	UserName string
 	Password string
 	Database string

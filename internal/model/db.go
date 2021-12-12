@@ -1,7 +1,11 @@
 package model
 
 import (
+	"net/url"
+	"os"
 	"reflect"
+
+	"github.com/joho/godotenv"
 )
 
 type Database interface {
@@ -29,22 +33,47 @@ const (
 )
 
 func ConnectStorage(st StorageType) (Database, error) {
+	godotenv.Load(".env")
 	// connect
 	switch st {
 	case MongoDB:
-		conf := MongoConfig{}
+		url, err := url.Parse(os.Getenv("MONGO_URL"))
+		if err != nil {
+			return nil, err
+		}
+		conf := MongoConfig{
+			URL:      *url,
+			UserName: os.Getenv("MONGO_USER"),
+			Password: os.Getenv("MONGO_PASSWORD"),
+		}
 		// if passwd, ok := url.URL.User.Password(); ok {
 		// 	conf.AccessKeySecret = passwd
 		// }
 		return ConnectMongo(&conf)
 	case MSQL:
-		conf := MsSQLConfig{}
+		url, err := url.Parse(os.Getenv("MSSQL_URL"))
+		if err != nil {
+			return nil, err
+		}
+		conf := MsSQLConfig{
+			URL:      *url,
+			UserName: os.Getenv("MSSQL_USER"),
+			Password: os.Getenv("MSSQL_PASSWORD"),
+		}
 		// if passwd, ok := url.URL.User.Password(); ok {
 		// 	conf.Password = passwd
 		// }
 		return ConnectMsSQL(&conf)
 	case Neo4J:
-		conf := Neo4jConfig{}
+		url, err := url.Parse(os.Getenv("NEO4J_URL"))
+		if err != nil {
+			return nil, err
+		}
+		conf := Neo4jConfig{
+			URL:      *url,
+			UserName: os.Getenv("NEO4J_USER"),
+			Password: os.Getenv("NEO4J_PASSWORD"),
+		}
 		return ConnectNeo4j(&conf)
 	default:
 		return nil, nil

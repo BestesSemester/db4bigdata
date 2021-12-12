@@ -13,7 +13,7 @@ import (
 )
 
 type MongoConfig struct {
-	Url      url.URL
+	URL      url.URL
 	UserName string
 	Password string
 }
