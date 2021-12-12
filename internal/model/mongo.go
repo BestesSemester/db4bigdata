@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"reflect"
 	"time"
@@ -28,7 +29,8 @@ func ConnectMongo(conf *MongoConfig) (Database, error) {
 	// err := mgm.SetDefaultConfig(nil, "mgm_lab", options.Client().ApplyURI("mongodb://root:example@127.0.0.1"))
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://root:example@127.0.0.1"))
+	mongourl := fmt.Sprintf("%s://%s:%s@%s", conf.URL.Scheme, conf.UserName, conf.Password, conf.URL.Host)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongourl))
 
 	myMongo := &MyMongo{client, &ctx}
 	return myMongo, err

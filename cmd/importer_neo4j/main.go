@@ -14,7 +14,7 @@ import (
 func main() {
 	util.SetupLogs()
 	logrus.Println("hello")
-	mssql, err := model.ConnectStorage(model.MSQL)
+	neo4j, err := model.ConnectStorage(model.Neo4J)
 	if err != nil {
 		logrus.Fatalln(err)
 	}
@@ -27,7 +27,7 @@ func main() {
 	importer.ImportPersonsFromJSON("./generators/output_data/persons.json", &people)
 	// importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json")
 	// importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json")
-	mssql.SavePersons(&people)
+	neo4j.Save(&people)
 	// mongo.Save()
 
 	// mssql.Find("", &p)
