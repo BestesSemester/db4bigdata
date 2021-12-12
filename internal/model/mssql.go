@@ -55,8 +55,10 @@ func (mssql *MsSQL) Save(obj interface{}) error {
 		if err := mssql.saveIterable(obj); err != nil {
 			return err
 		}
-	default:
+	case reflect.Struct:
 		mssql.db.Save(obj)
+	default:
+		return fmt.Errorf("cannot unwrap value of type %s", t.Kind())
 	}
 	return nil
 }
