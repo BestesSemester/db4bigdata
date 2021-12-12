@@ -23,7 +23,8 @@ func main() {
 
 	// Call importer
 	// **** Following lines just works in debug mode ****
-	people := importer.ImportPersonsFromJSON("./generators/output_data/persons.json")
+	people := []model.Person{}
+	importer.ImportPersonsFromJSON("./generators/output_data/persons.json", &people)
 	// importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json")
 	// importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json")
 	mssql.SavePersons(&people)
