@@ -50,7 +50,6 @@ func (mssql *MsSQL) Save(obj interface{}) error {
 	case reflect.Slice:
 		for i := 0; i < o.Len(); i++ {
 			iface := o.Index(i).Addr().Interface()
-			logrus.Println(reflect.TypeOf(iface))
 			mssql.db.Save(iface)
 		}
 	case reflect.Array:
