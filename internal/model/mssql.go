@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"net/url"
 	"reflect"
 
@@ -23,7 +24,7 @@ type MsSQL struct {
 func ConnectMsSQL(conf *MsSQLConfig) (Database, error) {
 	mssql := &MsSQL{}
 	// conn, err := sql.Open("mssql", conf.Database)
-	dsn := "sqlserver://sa:1234myFancyPasswort@127.0.0.1?database=master"
+	dsn := fmt.Sprintf("%s://%s:%s@%s?%s", conf.URL.Scheme, conf.UserName, conf.Password, conf.URL.Host, conf.URL.RawQuery)
 	dbconn, err := gorm.Open(sqlserver.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
@@ -42,6 +43,20 @@ func (mssql *MsSQL) migrate() {
 
 // TODO: implement save logic
 func (mssql *MsSQL) Save(obj interface{}) error {
+	t := getDirectTypeFromInterface(obj)
+	o := getDirectStructFromInterface(obj)
+	logrus.Println(t.Kind())
+	switch t.Kind() {
+	case reflect.Slice:
+		for i := 0; i < o.Len(); i++ {
+			iface := o.Index(i).Addr().Interface()
+			logrus.Println(reflect.TypeOf(iface))
+			mssql.db.Save(iface)
+		}
+	case reflect.Array:
+
+	default:
+	}
 	return nil
 }
 

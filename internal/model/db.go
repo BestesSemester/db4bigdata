@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 )
 
 type Database interface {
@@ -104,14 +105,15 @@ func getAsAbstractStructFieldSetFromInterface(inf interface{}) abstractStructFie
 }
 
 func getDirectTypeFromInterface(inf interface{}) reflect.Type {
-	var strct reflect.Type
+	var tp reflect.Type
 	t := reflect.TypeOf(inf)
 	if t.Kind() == reflect.Ptr {
-		strct = t.Elem()
+		logrus.Println("converting")
+		tp = t.Elem()
 	} else {
-		strct = t
+		tp = t
 	}
-	return strct
+	return tp
 }
 
 func getDirectStructFromInterface(inf interface{}) reflect.Value {
