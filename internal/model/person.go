@@ -20,5 +20,5 @@ type Person struct {
 	BirthDate        time.Time
 	RegistrationDate time.Time
 	RoleID           int
-	Role             Role
+	Role             Role `gorm:"constraint:OnUpdate:CASCADE;OnDelete:SET NULL;"`
 }

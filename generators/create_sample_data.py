@@ -148,7 +148,7 @@ df_persons['EmailAddress'] = df_persons.apply(lambda x: fake.email(), axis = 1)
 
 df_persons['PersonID'] = df_persons.index
 df_persons['Role'] = [get_role_dict_by_id(0).to_dict() for x in range(n_persons)]
-df_persons['RoleID'] = 0
+df_persons['RoleID'] = 1
 df_persons.drop(['PhoneNumber_pre', 'house_numbers_postfix_index', 'HouseNumber_onlyNumber', 'house_numbers_postfix'],axis=1,inplace=True)
 #after the drop of unused cols df_persons is complete
 
@@ -224,8 +224,8 @@ df_invoices['InvoiceDate'] = df_invoices.apply(lambda x: (start_date + datetime.
 df_invoices['PayDate']  = df_invoices['InvoiceDate'].apply(lambda day: datetime.datetime.combine(day + datetime.timedelta(days=10), datetime.datetime.min.time()).isoformat() + "Z")
 df_invoices['InvoiceDate'] = df_invoices['InvoiceDate'].apply(lambda day: datetime.datetime.combine(day, datetime.datetime.min.time()).isoformat() + "Z")
 df_invoices['OpenSum'] = 0
-df_invoices['Customer'] = list(df_persons[df_persons.RoleID==0].sample(n_invoices, replace = True).to_dict('records'))
-df_invoices['Agent'] =  list(df_persons[df_persons.RoleID!=0].sample(n_invoices, replace = True).to_dict('records'))
+df_invoices['Customer'] = list(df_persons[df_persons.RoleID==1].sample(n_invoices, replace = True).to_dict('records'))
+df_invoices['Agent'] =  list(df_persons[df_persons.RoleID!=1].sample(n_invoices, replace = True).to_dict('records'))
 df_invoices['InvoiceID'] = df_invoices.index
 
 

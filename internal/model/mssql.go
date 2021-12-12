@@ -46,9 +46,11 @@ func (mssql *MsSQL) Save(obj interface{}) error {
 }
 
 func (mssql *MsSQL) SavePersons(persons *[]Person) error {
-	for i := 0; i+100 < len(*persons); i += 100 {
+	for i := range *persons {
 		p := *persons
-		sl := p[i : i+100]
+		sl := p[i]
+		// sl := p[0]
+		// logrus.Println(p)
 		mssql.db.Create(&sl)
 	}
 	return nil
