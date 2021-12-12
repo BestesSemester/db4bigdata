@@ -13,5 +13,8 @@ To run locally:
 # To use mongo db functionality:
 `go get go.mongodb.org/mongo-driver/mongo`
 
+# Starting services locally
+`cd deployments/development && docker-compose up -d`
+
 # Credentials
 You may store your credentials for databases in environment variables or in ".env".
