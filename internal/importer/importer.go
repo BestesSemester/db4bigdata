@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func ImportPersonsFromJSON(jsonfile string) {
+func ImportPersonsFromJSON(jsonfile string) []model.Person {
 	// Let's first read the `config.json` file
 	content, err := ioutil.ReadFile(jsonfile)
 	if err != nil {
@@ -25,7 +25,7 @@ func ImportPersonsFromJSON(jsonfile string) {
 		logrus.Fatal(err)
 	}
 	logrus.Println(len(persons))
-	ImportObjectsMongo(persons)
+	return persons
 }
 
 func ImportHierarchyFromJSON(jsonfile string) {

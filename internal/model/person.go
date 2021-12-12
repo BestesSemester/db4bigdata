@@ -1,8 +1,13 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Person struct {
+	gorm.Model
 	CustomerID       int
 	Name             string
 	FirstName        string
@@ -14,5 +19,6 @@ type Person struct {
 	EmailAddress     string
 	BirthDate        time.Time
 	RegistrationDate time.Time
+	RoleID           int
 	Role             Role
 }

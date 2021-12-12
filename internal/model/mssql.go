@@ -1,11 +1,12 @@
 package model
 
 import (
-	"database/sql"
 	"net/url"
 	"reflect"
 
 	"github.com/sirupsen/logrus"
+	"gorm.io/driver/sqlserver"
+	"gorm.io/gorm"
 )
 
 type MsSQLConfig struct {
@@ -16,18 +17,40 @@ type MsSQLConfig struct {
 }
 
 type MsSQL struct {
-	conn *sql.DB
+	db *gorm.DB
 }
 
 func ConnectMsSQL(conf *MsSQLConfig) (Database, error) {
 	mssql := &MsSQL{}
 	// conn, err := sql.Open("mssql", conf.Database)
-	mssql.conn = nil
+	dsn := "sqlserver://sa:1234myFancyPasswort@127.0.0.1?database=master"
+	dbconn, err := gorm.Open(sqlserver.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	mssql.db = dbconn
+	mssql.db = mssql.db.Session(&gorm.Session{FullSaveAssociations: true})
+	mssql.migrate()
 	return mssql, nil
+}
+
+func (mssql *MsSQL) migrate() {
+	mssql.db.AutoMigrate(&Role{})
+	mssql.db.AutoMigrate(&Person{})
 }
 
 // TODO: implement save logic
 func (mssql *MsSQL) Save(obj interface{}) error {
+	return nil
+}
+
+func (mssql *MsSQL) SavePersons(persons *[]Person) error {
+	for i := 0; i+100 < len(*persons); i += 100 {
+		p := *persons
+		sl := p[i : i+100]
+		mssql.db.Create(&sl)
+	}
 	return nil
 }
 
@@ -48,6 +71,6 @@ func (mssql *MsSQL) Find(qry string, target interface{}) error {
 
 // Closes the database connection (should only be used if you close it on purpose)
 func (mssql *MsSQL) Close() error {
-	err := mssql.conn.Close()
-	return err
+	// err := mssql.conn.Close()
+	return nil
 }

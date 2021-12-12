@@ -1,8 +1,13 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Invoice struct {
+	gorm.Model
 	InvoiceID   int
 	InvoiceDate time.Time
 	Customer    Person

@@ -1,7 +1,10 @@
 package model
 
+import "gorm.io/gorm"
+
 type Role struct {
-	RoleID      int
+	gorm.Model
+	RoleID      int `gorm:"index"`
 	Description string
 }
 

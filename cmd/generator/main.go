@@ -2,6 +2,9 @@ package main
 
 import (
 	// "git.sys-tem.org/caos/db4bigdata/internal/importer"
+
+	"git.sys-tem.org/caos/db4bigdata/internal/importer"
+	"git.sys-tem.org/caos/db4bigdata/internal/model"
 	"git.sys-tem.org/caos/db4bigdata/internal/util"
 
 	"github.com/sirupsen/logrus"
@@ -11,16 +14,19 @@ import (
 func main() {
 	util.SetupLogs()
 	logrus.Println("hello")
-	// mssql, _ := model.ConnectStorage(model.MSQL)
+	mssql, err := model.ConnectStorage(model.MSQL)
+	if err != nil {
+		logrus.Fatalln(err)
+	}
 	//
 	// p := model.Person{Name: "Scheffel"}
 
 	// Call importer
 	// **** Following lines just works in debug mode ****
-	// importer.ImportPersonsFromJSON("./../../generators/output_data/persons.json")
-	// importer.ImportInvoiceFromJSON("./../../generators/output_data/invoices.json")
-	// importer.ImportHierarchyFromJSON("./../../generators/output_data/hierarchy.json")
-
+	people := importer.ImportPersonsFromJSON("./generators/output_data/persons.json")
+	// importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json")
+	// importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json")
+	mssql.SavePersons(&people)
 	// mongo.Save()
 
 	// mssql.Find("", &p)

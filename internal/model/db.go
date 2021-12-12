@@ -6,6 +6,7 @@ import (
 
 type Database interface {
 	Save(obj interface{}) error
+	SavePersons(obj *[]Person) error
 	Delete(obj interface{}) error
 	Find(qry string, obj interface{}) error
 	Close() error
