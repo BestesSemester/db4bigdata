@@ -90,4 +90,26 @@ func ImportObjectsMongo(obj interface{}) {
 	}
 }
 
+func ImportObjectsMsql(obj interface{}) {
+	msql, err := model.ConnectStorage(model.MSQL)
+	if err != nil {
+		logrus.Fatal("Import to MSQL failed: ", err)
+	}
+	err = msql.Save(obj)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+}
+
+func ImportObjectsNeo4j(obj interface{}) {
+	neo4j, err := model.ConnectStorage(model.Neo4J)
+	if err != nil {
+		logrus.Fatal("Import to Neo4j failed: ", err)
+	}
+	err = neo4j.Save(obj)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+}
+
 // }
