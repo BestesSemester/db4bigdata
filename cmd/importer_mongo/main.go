@@ -17,9 +17,6 @@ func main() {
 	if err != nil {
 		logrus.Fatal("Import to MongoDB failed: ", err)
 	}
-	// mssql, _ := model.ConnectStorage(model.MSQL)
-	//
-	// p := model.Person{Name: "Scheffel"}
 
 	// Call importer
 	persons := []model.Person{}
@@ -41,7 +38,4 @@ func main() {
 	if err != nil {
 		logrus.Fatalln(err)
 	}
-	// missing save method for msql, will be added if ready
-	// missing save method for neo4j, will be added if ready
-
 }
