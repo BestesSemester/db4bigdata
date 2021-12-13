@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/url"
 	"reflect"
 	"time"
@@ -80,6 +81,17 @@ func (mongo *MyMongo) Migrate(inf ...interface{}) error {
 
 // TODO: implement delete logic
 func (mongo *MyMongo) Delete(obj interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	// TODO: How to get the collection name?
+	// coll := mongo.conn.Database(dbName).Collection(t.Elem().Name())
+	coll := mongo.conn.Database(dbName).Collection("Person")
+	deleteResult, err := coll.DeleteMany(ctx, obj)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logrus.Debug("Deleted {", deleteResult.DeletedCount, "} objects")
+
 	return nil
 }
 
