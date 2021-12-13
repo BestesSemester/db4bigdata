@@ -128,12 +128,22 @@ func getDirectStructFromInterface(inf interface{}) reflect.Value {
 	return strct
 }
 
-// ins has to be kind of SLICE
-func getInterfaceSliceFromInterface(inf interface{}) []interface{} {
+// inf has to be kind of SLICE
+func getInterfacePointerSliceFromInterface(inf interface{}) []interface{} {
 	v := getDirectStructFromInterface(inf)
 	var objs []interface{}
 	for i := 0; i < v.Len(); i++ {
 		objs = append(objs, v.Index(i).Addr().Interface())
+	}
+	return objs
+}
+
+// inf has to be kind of SLICE
+func getInterfaceSliceFromInterface(inf interface{}) []interface{} {
+	v := getDirectStructFromInterface(inf)
+	var objs []interface{}
+	for i := 0; i < v.Len(); i++ {
+		objs = append(objs, v.Index(i).Interface())
 	}
 	return objs
 }

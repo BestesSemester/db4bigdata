@@ -8,19 +8,20 @@ import (
 
 type Invoice struct {
 	gorm.Model
+	Neo4jBaseNode
 	InvoiceID   int
 	InvoiceDate time.Time
-	Customer    Person
+	Customer    *Person
 	//Name          string
 	//FirstName     string
 	//StreetHouseno string
 	//ZipCode       int
 	//Residence     string
-	Agent        Person
+	Agent        *Person
 	NettoSum     float32
 	VAT          float32
 	BruttoSum    float32
-	Provision    Provision
+	Provision    *Provision
 	ProvisionSum float32
 	PayDate      time.Time
 	OpenSum      float32

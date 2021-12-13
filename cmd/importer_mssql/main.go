@@ -29,7 +29,6 @@ func main() {
 	// importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json")
 	mssql.Migrate(&model.Person{})
 	mssql.Save(&people)
-	// mongo.Save()
 
 	// mssql.Find("", &p)
 }

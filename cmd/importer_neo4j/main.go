@@ -25,6 +25,7 @@ func main() {
 	// **** Following lines just works in debug mode ****
 	people := []model.Person{}
 	importer.ImportPersonsFromJSON("./generators/output_data/persons.json", &people)
+	people = model.InterconnectPersonRoles(people)
 	// importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json")
 	// importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json")
 	neo4j.Save(&people)

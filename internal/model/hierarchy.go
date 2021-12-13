@@ -1,12 +1,15 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Hierarchy struct {
-	Agent            Person
-	Supervisor       Person
+	Neo4jBaseNode
+	Agent            *Person
+	Supervisor       *Person
 	ModificationDate time.Time
-	AgentStatus      Status
+	AgentStatus      *Status
 }
 
 type Status int

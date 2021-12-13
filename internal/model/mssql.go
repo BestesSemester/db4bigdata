@@ -51,25 +51,22 @@ func (mssql *MsSQL) Save(obj interface{}) error {
 	t := getDirectTypeFromInterface(obj)
 	switch t.Kind() {
 	// Check if the interface is iterable
-	case reflect.Slice:
-		if err := mssql.saveIterable(obj); err != nil {
-			return err
-		}
-	case reflect.Array:
+	case reflect.Slice | reflect.Array:
+		logrus.Println("detected iterables")
 		if err := mssql.saveIterable(obj); err != nil {
 			return err
 		}
 	case reflect.Struct:
 		mssql.db.Save(obj)
 	default:
-		return fmt.Errorf("cannot unwrap value of type %s", t.Kind())
+		return fmt.Errorf("unsupported data type: %s", t.Kind())
 	}
 	return nil
 }
 
 func (mssql *MsSQL) saveIterable(obj interface{}) error {
 	// iterate over the slice (has to be abstracted, because we are working type-agnostic)
-	objs := getInterfaceSliceFromInterface(obj)
+	objs := getInterfacePointerSliceFromInterface(obj)
 	for _, o := range objs {
 		// save
 		mssql.db.Save(o)
