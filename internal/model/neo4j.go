@@ -49,7 +49,7 @@ func ConnectNeo4j(conf *Neo4jConfig) (Database, error) {
 		IndexStrategy:    gogm.IGNORE_INDEX,
 	}
 
-	conn, err := gogm.New(&config, gogm.DefaultPrimaryKeyStrategy, &Person{}, &Role{})
+	conn, err := gogm.New(&config, gogm.DefaultPrimaryKeyStrategy, &Person{}, &Role{}, &Invoice{})
 	if err != nil {
 		logrus.Errorln(err)
 		return nil, err
@@ -75,14 +75,14 @@ func (neo4j *Neo4j) Save(obj interface{}) error {
 		logrus.Println("found iterable")
 		objs := getInterfacePointerSliceFromInterface(obj)
 		for _, o := range objs {
-			err := neo4j.session.Save(context.Background(), o)
+			err := neo4j.session.SaveDepth(context.Background(), o, 2)
 			if err != nil {
 				logrus.Errorln(err)
 				return err
 			}
 		}
 	case reflect.Struct:
-		if err := neo4j.session.Save(context.Background(), obj); err != nil {
+		if err := neo4j.session.SaveDepth(context.Background(), obj, 2); err != nil {
 			return err
 		}
 	default:

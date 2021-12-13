@@ -5,7 +5,7 @@ import (
 )
 
 type Hierarchy struct {
-	Neo4jBaseNode
+	Neo4jBaseNode    `bson:"-"`
 	Agent            *Person
 	Supervisor       *Person
 	ModificationDate time.Time

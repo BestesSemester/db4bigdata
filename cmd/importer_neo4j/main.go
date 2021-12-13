@@ -24,12 +24,13 @@ func main() {
 	// Call importer
 	// **** Following lines just works in debug mode ****
 	people := []model.Person{}
+	invoices := []model.Invoice{}
 	importer.ImportPersonsFromJSON("./generators/output_data/persons.json", &people)
-	people = model.InterconnectPersonRoles(people)
-	// importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json")
+	model.InterconnectPersonRoles(&people)
+	importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json", &invoices)
+	people, invoices = model.MatchPeopleAndInvoices(people, invoices)
 	// importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json")
-	neo4j.Save(&people)
-	// mongo.Save()
+	neo4j.Save(&invoices)
 
 	// mssql.Find("", &p)
 }
