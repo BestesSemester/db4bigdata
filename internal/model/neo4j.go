@@ -101,7 +101,7 @@ func (neo4j *Neo4j) Delete(obj interface{}) error {
 }
 
 // Returns sql-Result
-func (neo4j *Neo4j) Find(qry string, target interface{}) error {
+func (neo4j *Neo4j) Find(qry interface{}, target interface{}) error {
 	// mssql.conn.Exec(qry)
 	t := reflect.TypeOf(target)
 	logrus.Println(t)

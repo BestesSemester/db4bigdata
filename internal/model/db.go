@@ -13,7 +13,7 @@ type Database interface {
 	Save(obj interface{}) error
 	SavePersons(obj *[]Person) error
 	Delete(obj interface{}) error
-	Find(qry string, obj interface{}) error
+	Find(qry interface{}, obj interface{}) error
 	Migrate(inf ...interface{}) error
 	Close() error
 }

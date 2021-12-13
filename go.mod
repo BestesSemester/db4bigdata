@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/joho/godotenv v1.3.0
 	github.com/keepeye/logrus-filename v0.0.0-20190711075016-ce01a4391dd1
+	github.com/mindstand/gogm/v2 v2.2.2
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/sirupsen/logrus v1.8.1
 	go.mongodb.org/mongo-driver v1.8.0
@@ -28,7 +29,6 @@ require (
 	github.com/kamva/mgm/v3 v3.4.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/mindstand/go-cypherdsl v0.2.0 // indirect
-	github.com/mindstand/gogm/v2 v2.2.2 // indirect
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.0 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

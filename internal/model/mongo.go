@@ -10,7 +10,6 @@ import (
 	// "github.com/kamva/mgm/v3"
 	// "git.sys-tem.org/caos/db4bigdata/internal/model"
 	"github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -45,9 +44,8 @@ func ConnectMongo(conf *MongoConfig) (Database, error) {
 	// err := mgm.SetDefaultConfig(nil, "mgm_lab", options.Client().ApplyURI("mongodb://root:example@127.0.0.1"))
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	mongourl := fmt.Sprintf("%s://%s:%s@%s", conf.URL.Scheme, conf.UserName, conf.Password, conf.URL.Host)
+	mongourl := fmt.Sprintf("%s://%s:%s@%s/", conf.URL.Scheme, conf.UserName, conf.Password, conf.URL.Host)
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongourl))
-
 	myMongo := &MyMongo{client, &ctx}
 	return myMongo, err
 }
@@ -91,12 +89,15 @@ func (mongo *MyMongo) Delete(obj interface{}) error {
 }
 
 // Returns sql-Result
-func (mongo *MyMongo) Find(qry string, target interface{}) error {
+func (mongo *MyMongo) Find(qry interface{}, target interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	coll := mongo.conn.Database(dbName).Collection(("Person"))
 
-	cursor, err := coll.Find(ctx, bson.D{{"name", qry}})
+	cursor, err := coll.Find(ctx, qry)
+	if err != nil {
+		logrus.Fatal("Find failed: ", err)
+	}
 	if err = cursor.All(ctx, target); err != nil {
 		logrus.Fatal(err)
 	}

@@ -5,11 +5,27 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run in Debug-Mode",
+            "name": "neo4j importer run in Debug-Mode",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/importer_neo4j/main.go",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "mongo importer run in Debug-Mode",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/importer_mongo/main.go",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "mongo find run in Debug-Mode",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/find_mongo/main.go",
             "cwd": "${workspaceFolder}"
         }
     ]
