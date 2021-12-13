@@ -91,10 +91,6 @@ func (neo4j *Neo4j) Save(obj interface{}) error {
 	return nil
 }
 
-func (neo4j *Neo4j) SavePersons(persons *[]Person) error {
-	return nil
-}
-
 // TODO: implement delete logic
 func (neo4j *Neo4j) Delete(obj interface{}) error {
 	return nil

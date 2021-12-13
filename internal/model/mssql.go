@@ -74,17 +74,6 @@ func (mssql *MsSQL) saveIterable(obj interface{}) error {
 	return nil
 }
 
-func (mssql *MsSQL) SavePersons(persons *[]Person) error {
-	for i := range *persons {
-		p := *persons
-		sl := p[i]
-		// sl := p[0]
-		// logrus.Println(p)
-		mssql.db.Create(&sl)
-	}
-	return nil
-}
-
 // TODO: implement delete logic
 func (mssql *MsSQL) Delete(obj interface{}) error {
 	return nil

@@ -79,11 +79,6 @@ func (mongo *MyMongo) Migrate(inf ...interface{}) error {
 }
 
 // TODO: implement delete logic
-func (mongo *MyMongo) SavePersons(obj *[]Person) error {
-	return nil
-}
-
-// TODO: implement delete logic
 func (mongo *MyMongo) Delete(obj interface{}) error {
 	return nil
 }
