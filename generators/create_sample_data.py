@@ -90,7 +90,7 @@ df_adress_store = pd.read_json(r'./adresses.json',
 #%% load roles
 roles = pd.read_json("input_data/roles.json")
 print(roles)
-
+rolecount = len(roles.transpose().index)
 #%% create persons
 
 def get_role_dict_by_id(id):
@@ -148,7 +148,7 @@ df_persons['EmailAddress'] = df_persons.apply(lambda x: fake.email(), axis = 1)
 
 df_persons['PersonID'] = df_persons.index
 df_persons['Role'] = [get_role_dict_by_id(0).to_dict() for x in range(n_persons)]
-df_persons['RoleID'] = 0
+df_persons['RoleID'] = 1
 df_persons.drop(['PhoneNumber_pre', 'house_numbers_postfix_index', 'HouseNumber_onlyNumber', 'house_numbers_postfix'],axis=1,inplace=True)
 #after the drop of unused cols df_persons is complete
 
@@ -179,17 +179,18 @@ df_agents = df_persons.sample(n_agents, replace = False)
 pos = 0
 lst_agents = []
 for level in agent_hierarchy_n:
+    l = level
     supervisor_offset = 0
     for agent_nr in agent_hierarchy_n[level]:
-        if level == 1:
+        if l == 1:
             lst_supervisors = [-1] * agent_nr
         for j in range(agent_nr):
+            if rolecount <= level:
+                l = rolecount - 1
+                print("NOTICE: moving lower level persons to last available level - please define other levels in input/roles.json if you wish to expand levels.")
             lst_agents.append(df_agents.iloc[pos].to_dict())
-            #df_persons.loc[lst_agents[-1], 'Role']= 1
-            # print(df_persons.loc[lst_agents[-1]["PersonID"]].Role)
-            # df_persons.loc[lst_agents[-1]["PersonID"], "Role"] = ""
             person = df_persons.iloc[lst_agents[-1]["PersonID"]]
-            person.Role = get_role_dict_by_id(1).to_dict()
+            person.Role = get_role_dict_by_id(l).to_dict()
             person.RoleID = person.Role["RoleID"]
             df_persons.at[lst_agents[-1]["PersonID"]] = person
             pos += 1
@@ -223,8 +224,8 @@ df_invoices['InvoiceDate'] = df_invoices.apply(lambda x: (start_date + datetime.
 df_invoices['PayDate']  = df_invoices['InvoiceDate'].apply(lambda day: datetime.datetime.combine(day + datetime.timedelta(days=10), datetime.datetime.min.time()).isoformat() + "Z")
 df_invoices['InvoiceDate'] = df_invoices['InvoiceDate'].apply(lambda day: datetime.datetime.combine(day, datetime.datetime.min.time()).isoformat() + "Z")
 df_invoices['OpenSum'] = 0
-df_invoices['Customer'] = list(df_persons[df_persons.RoleID==0].sample(n_invoices, replace = True).to_dict('records'))
-df_invoices['Agent'] =  list(df_persons[df_persons.RoleID!=0].sample(n_invoices, replace = True).to_dict('records'))
+df_invoices['Customer'] = list(df_persons[df_persons.RoleID==1].sample(n_invoices, replace = True).to_dict('records'))
+df_invoices['Agent'] =  list(df_persons[df_persons.RoleID!=1].sample(n_invoices, replace = True).to_dict('records'))
 df_invoices['InvoiceID'] = df_invoices.index
 
 
@@ -234,12 +235,6 @@ def all_but(*names, df):
     return res
 #%% write json-files
 out_json = (df_persons
-    # .groupby(all_but("Role", df=df_persons))
-    # .apply(
-    #     lambda x: {"RoleID": roles[["RoleID"]].iloc[x["Role"].values[0]][0], "Description": roles[["Description"]].iloc[x["Role"].values[0]][0]}
-    # )
-    # .reset_index()
-    # .rename(columns={0:'Role'})
     .to_json(orient='records'))
 with open(r'./output_data/persons.json', 'w') as f:
     f.write(out_json)

@@ -1,8 +1,11 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Provision struct {
+	Neo4jBaseNode
 	ProvisionID      int
 	ProvisionAmount  float32
 	MainAgentAmount  float32

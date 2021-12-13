@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"reflect"
 	"time"
@@ -17,7 +18,7 @@ import (
 const dbName string = "myDB"
 
 type MongoConfig struct {
-	Url      url.URL
+	URL      url.URL
 	UserName string
 	Password string
 }
@@ -44,7 +45,8 @@ func ConnectMongo(conf *MongoConfig) (Database, error) {
 	// err := mgm.SetDefaultConfig(nil, "mgm_lab", options.Client().ApplyURI("mongodb://root:example@127.0.0.1"))
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://root:example@127.0.0.1"))
+	mongourl := fmt.Sprintf("%s://%s:%s@%s", conf.URL.Scheme, conf.UserName, conf.Password, conf.URL.Host)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongourl))
 
 	myMongo := &MyMongo{client, &ctx}
 	return myMongo, err
@@ -62,6 +64,7 @@ func (mongo *MyMongo) Save(obj interface{}) error {
 		res, err := coll.InsertMany(ctx, objs)
 		if err != nil {
 			logrus.Fatal("Error when inserting objects: ", err)
+			return err
 		} else {
 			logrus.Println("Inserted ", len(res.InsertedIDs), " documents for Collection \"", t.Elem().Name(), "\"")
 		}
@@ -69,6 +72,16 @@ func (mongo *MyMongo) Save(obj interface{}) error {
 
 	default:
 	}
+	return nil
+}
+
+// Migrate - does nothing here
+func (mongo *MyMongo) Migrate(inf ...interface{}) error {
+	return fmt.Errorf("no implementation here")
+}
+
+// TODO: implement delete logic
+func (mongo *MyMongo) SavePersons(obj *[]Person) error {
 	return nil
 }
 

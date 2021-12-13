@@ -1,10 +1,8 @@
 package model
 
 type Role struct {
-	RoleID      int
-	Description string
-}
-
-func (r *Role) Save() {
-
+	Neo4jBaseNode `bson:"-"`
+	RoleID        int       `gorm:"primaryKey;autoIncrement:false;" gogm:"name=id"`
+	Description   string    `gogm:"name=description"`
+	People        []*Person `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=hasRole" json:"-"`
 }
