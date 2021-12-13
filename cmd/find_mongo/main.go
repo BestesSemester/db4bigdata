@@ -19,11 +19,20 @@ func main() {
 		logrus.Fatal("Connect to MongoDB failed: ", err)
 	}
 
-	var result []model.Person
-	var qry = bson.D{{"name", "Schott"}}
-	mongo.Find(&qry, &result) //Actually just find by name
+	var result_persons []model.Person
 
-	for i, s := range result {
+	var qry_persons = bson.D{{"name", "Schott"}}
+	mongo.Find(&qry_persons, &result_persons)
+
+	for i, s := range result_persons {
+		logrus.Info(i, s)
+	}
+
+	var result_invoices []model.Invoice
+	var qry_invoices = bson.D{{"invoiceid", "990"}}
+	mongo.Find(&qry_invoices, &result_invoices)
+
+	for i, s := range result_invoices {
 		logrus.Info(i, s)
 	}
 }
