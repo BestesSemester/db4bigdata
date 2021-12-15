@@ -183,7 +183,7 @@ for level in agent_hierarchy_n:
     supervisor_offset = 0
     for agent_nr in agent_hierarchy_n[level]:
         if l == 1:
-            lst_supervisors = [-1] * agent_nr
+            lst_supervisors = [None] * agent_nr
         for j in range(agent_nr):
             if rolecount <= level:
                 l = rolecount - 1
@@ -198,7 +198,7 @@ for level in agent_hierarchy_n:
                 lst_supervisors.extend( [lst_agents[-1]]  * agent_hierarchy_n[level+1][j + supervisor_offset]  )
         supervisor_offset = supervisor_offset + agent_nr
 modification_date = datetime.datetime(2021, 1, 1).isoformat() + "Z"
-df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'Supervisor': lst_supervisors, 
+df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'Supervisor': pd.Series(lst_supervisors, dtype=pd.Int64Dtype()), 
                              'ModificationDate': modification_date, 'AgentStatus': 1})
 
 
