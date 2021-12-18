@@ -11,13 +11,13 @@ type Invoice struct {
 	Neo4jBaseNode `bson:"-"`
 	InvoiceID     int
 	InvoiceDate   time.Time
-	Customer      *Person `gogm:"direction=outgoing;relationship=bought"`
+	Customer      *Person `gogm:"direction=incoming;relationship=bought"`
 	//Name          string
 	//FirstName     string
 	//StreetHouseno string
 	//ZipCode       int
 	//Residence     string
-	Agent        *Person `gogm:"direction=outgoing;relationship=sold"`
+	Agent        *Person `gogm:"direction=incoming;relationship=sold"`
 	NettoSum     float32
 	VAT          float32
 	BruttoSum    float32
