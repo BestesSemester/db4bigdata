@@ -2,12 +2,15 @@ package model
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Hierarchy struct {
+	gorm.Model       `bson:"-"`
 	Neo4jBaseNode    `bson:"-"`
-	Agent            *Person `gorm:"constraint:OnUpdate:CASCADE;OnDelete:SET NULL;"`
-	Supervisor       *Person `gorm:"constraint:OnUpdate:CASCADE;OnDelete:SET NULL;"`
+	Agent            *Person `gorm:"foreignKey:PersonID"`
+	Supervisor       *Person `gorm:"foreignKey:PersonID"`
 	ModificationDate time.Time
 	AgentStatus      *Status
 }

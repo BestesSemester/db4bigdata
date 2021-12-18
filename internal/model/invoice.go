@@ -17,10 +17,11 @@ type Invoice struct {
 	//StreetHouseno string
 	//ZipCode       int
 	//Residence     string
+	AgentID      int
 	Agent        *Person `gorm:"foreignKey:PersonID"; gogm:"direction=outgoing;relationship=sold"`
-	NettoSum     float32
+	NetSum       float32
 	VAT          float32
-	BruttoSum    float32
+	GrossSum     float32
 	Provision    *Provision `gorm:"foreignKey:ProvisionID"`
 	ProvisionSum float32
 	PayDate      time.Time
