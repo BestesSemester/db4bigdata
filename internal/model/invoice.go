@@ -11,17 +11,17 @@ type Invoice struct {
 	Neo4jBaseNode `bson:"-"`
 	InvoiceID     int
 	InvoiceDate   time.Time
-	Customer      *Person `gogm:"direction=outgoing;relationship=bought"`
+	Customer      *Person `gorm:"foreignKey:PersonID"; gogm:"direction=outgoing;relationship=bought"`
 	//Name          string
 	//FirstName     string
 	//StreetHouseno string
 	//ZipCode       int
 	//Residence     string
-	Agent        *Person `gogm:"direction=outgoing;relationship=sold"`
+	Agent        *Person `gorm:"foreignKey:PersonID"; gogm:"direction=outgoing;relationship=sold"`
 	NettoSum     float32
 	VAT          float32
 	BruttoSum    float32
-	Provision    *Provision
+	Provision    *Provision `gorm:"foreignKey:ProvisionID"`
 	ProvisionSum float32
 	PayDate      time.Time
 	OpenSum      float32
