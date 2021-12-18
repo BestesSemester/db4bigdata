@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "git.sys-tem.org/caos/db4bigdata/internal/importer"
+	"git.sys-tem.org/caos/db4bigdata/internal/importer"
 
 	"git.sys-tem.org/caos/db4bigdata/internal/model"
 	"git.sys-tem.org/caos/db4bigdata/internal/util"
@@ -17,30 +17,23 @@ func main() {
 	if err != nil {
 		logrus.Fatalln(err)
 	}
-	//
-	p := model.Person{}
 
 	// Call importer
 	// **** Following lines just works in debug mode ****
-	/*people := []model.Person{}
+
+	people := []model.Person{}
 	importer.ImportPersonsFromJSON("./generators/output_data/persons.json", &people)
 	mssql.Migrate(&model.Person{})
 	mssql.Save(&people)
-	*/
-	/*
-		hierarchies := []model.Hierarchy{}
-		importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json", &hierarchies)
-		mssql.Migrate(&model.Hierarchy{})
-		mssql.Save(&hierarchies)
-	*/
-	/*
-		invoices := []model.Invoice{}
-		importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json", &invoices)
-		mssql.Migrate(&model.Invoice{})
-		mssql.Save(&invoices)
-	*/
-	//	mssql.First(&p, "1")
 
-	// Geht auf ID, nicht auf PersonID...
-	mssql.Find("3", &p)
+	hierarchies := []model.Hierarchy{}
+	importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json", &hierarchies)
+	mssql.Migrate(&model.Hierarchy{})
+	mssql.Save(&hierarchies)
+
+	invoices := []model.Invoice{}
+	importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json", &invoices)
+	mssql.Migrate(&model.Invoice{})
+	mssql.Save(&invoices)
+
 }
