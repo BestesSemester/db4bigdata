@@ -6,8 +6,8 @@ import (
 
 type Hierarchy struct {
 	Neo4jBaseNode    `bson:"-"`
-	Agent            *Person
-	Supervisor       *Person
+	Agent            *Person `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=hasRole" json:"-"`
+	Supervisor       *Person `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=hasRole" json:"-"`
 	ModificationDate time.Time
 	AgentStatus      *Status
 }
