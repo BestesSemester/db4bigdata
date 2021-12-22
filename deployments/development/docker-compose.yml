@@ -33,7 +33,7 @@ services:
   mssql: 
     image: mcr.microsoft.com/mssql/server
     environment:
-      SA_PASSWORD: "1234myFancyPasswort"
+      SA_PASSWORD: "changeMe1234"
       ACCEPT_EULA: "Y"
     ports:
       - 1433:1433

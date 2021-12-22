@@ -13,81 +13,38 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func ImportPersonsFromJSON(jsonfile string) {
+func ImportPersonsFromJSON(jsonfile string, persons *[]model.Person) {
 	// Let's first read the `config.json` file
 	content, err := ioutil.ReadFile(jsonfile)
 	if err != nil {
 		logrus.Fatal("Error when opening file: ", err)
 	}
-	var persons []model.Person
 	err = json.Unmarshal(content, &persons)
 	if err != nil {
 		logrus.Fatal(err)
 	}
-	logrus.Println(len(persons))
-	ImportObjectsMongo(persons)
 }
 
-func ImportHierarchyFromJSON(jsonfile string) {
+func ImportHierarchyFromJSON(jsonfile string, hierarchy *[]model.Hierarchy) {
 	// Let's first read the `config.json` file
 	content, err := ioutil.ReadFile(jsonfile)
 	if err != nil {
 		logrus.Fatal("Error when opening file: ", err)
 	}
-	var hierarchy []model.Hierarchy
 	err = json.Unmarshal(content, &hierarchy)
 	if err != nil {
 		logrus.Fatal(err)
 	}
-	logrus.Println(len(hierarchy))
-	ImportObjectsMongo(hierarchy)
 }
 
-func ImportInvoiceFromJSON(jsonfile string) {
+func ImportInvoiceFromJSON(jsonfile string, invoices *[]model.Invoice) {
 	// Let's first read the `config.json` file
 	content, err := ioutil.ReadFile(jsonfile)
 	if err != nil {
 		logrus.Fatal("Error when opening file: ", err)
 	}
-	var invoice []model.Invoice
-	err = json.Unmarshal(content, &invoice)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	logrus.Println(len(invoice))
-	ImportObjectsMongo(invoice)
-}
-
-// func ImportProvisiondistributionFromJSON(jsonfile string) {
-// 	// Let's first read the `config.json` file
-// 	content, err := ioutil.ReadFile(jsonfile)
-// 	if err != nil {
-// 		logrus.Fatal("Error when opening file: ", err)
-// 	}
-// 	var provdib []model.Provdib
-// 	err = json.Unmarshal(content, &provdib)
-// 	if err != nil {
-// 		logrus.Fatal(err)
-// 	}
-// 	logrus.Println(len(provdib))
-// 	db, err := model.ConnectStorage(model.MSQL)
-// 	if err != nil {
-// 		logrus.Fatal("Error in saving", err)
-// 	}
-// 	err = db.Save(provdib)
-// 	if err != nil {
-// 		logrus.Fatal(err)
-// 	}
-
-func ImportObjectsMongo(obj interface{}) {
-	mongo, err := model.ConnectStorage(model.MongoDB)
-	if err != nil {
-		logrus.Fatal("Import to MongoDB failed: ", err)
-	}
-	err = mongo.Save(obj)
+	err = json.Unmarshal(content, invoices)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 }
-
-// }

@@ -11,9 +11,13 @@ import (
 func main() {
 	util.SetupLogs()
 	pm := performancemeasurement.New(model.MSQL, "horrorlog")
-	pm.MeasureCPU("test")
-	pm.MeasureRAM("test")
+	pm.MeasureCPU("test", 1*time.Second)
+	pm.MeasureRAM("testRAM", 1*time.Second)
+	// pm.MeasureRAM("test")
 	test(pm)
+	time.Sleep(5 * time.Second)
+	pm.StopMeasureCPU()
+	pm.StopMeasureRAM()
 	pm.Run()
 }
 

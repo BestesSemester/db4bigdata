@@ -1,13 +1,19 @@
 package model
 
 import (
+	"net/url"
+	"os"
 	"reflect"
+
+	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 )
 
 type Database interface {
 	Save(obj interface{}) error
 	Delete(obj interface{}) error
-	Find(qry string, obj interface{}) error
+	Find(qry interface{}, obj interface{}) error
+	Migrate(inf ...interface{}) error
 	Close() error
 }
 
@@ -28,22 +34,47 @@ const (
 )
 
 func ConnectStorage(st StorageType) (Database, error) {
+	godotenv.Load(".env")
 	// connect
 	switch st {
 	case MongoDB:
-		conf := MongoConfig{}
+		url, err := url.Parse(os.Getenv("MONGO_URL"))
+		if err != nil {
+			return nil, err
+		}
+		conf := MongoConfig{
+			URL:      *url,
+			UserName: os.Getenv("MONGO_USER"),
+			Password: os.Getenv("MONGO_PASSWORD"),
+		}
 		// if passwd, ok := url.URL.User.Password(); ok {
 		// 	conf.AccessKeySecret = passwd
 		// }
 		return ConnectMongo(&conf)
 	case MSQL:
-		conf := MsSQLConfig{}
+		url, err := url.Parse(os.Getenv("MSSQL_URL"))
+		if err != nil {
+			return nil, err
+		}
+		conf := MsSQLConfig{
+			URL:      *url,
+			UserName: os.Getenv("MSSQL_USER"),
+			Password: os.Getenv("MSSQL_PASSWORD"),
+		}
 		// if passwd, ok := url.URL.User.Password(); ok {
 		// 	conf.Password = passwd
 		// }
 		return ConnectMsSQL(&conf)
 	case Neo4J:
-		conf := Neo4jConfig{}
+		url, err := url.Parse(os.Getenv("NEO4J_URL"))
+		if err != nil {
+			return nil, err
+		}
+		conf := Neo4jConfig{
+			URL:      *url,
+			UserName: os.Getenv("NEO4J_USER"),
+			Password: os.Getenv("NEO4J_PASSWORD"),
+		}
 		return ConnectNeo4j(&conf)
 	default:
 		return nil, nil
@@ -74,14 +105,15 @@ func getAsAbstractStructFieldSetFromInterface(inf interface{}) abstractStructFie
 }
 
 func getDirectTypeFromInterface(inf interface{}) reflect.Type {
-	var strct reflect.Type
+	var tp reflect.Type
 	t := reflect.TypeOf(inf)
 	if t.Kind() == reflect.Ptr {
-		strct = t.Elem()
+		logrus.Println("converting")
+		tp = t.Elem()
 	} else {
-		strct = t
+		tp = t
 	}
-	return strct
+	return tp
 }
 
 func getDirectStructFromInterface(inf interface{}) reflect.Value {
@@ -95,12 +127,22 @@ func getDirectStructFromInterface(inf interface{}) reflect.Value {
 	return strct
 }
 
-// ins has to be kind of SLICE
-func getInterfaceSliceFromInterface(inf interface{}) []interface{} {
-	v := reflect.ValueOf(inf)
-	objs := make([]interface{}, v.Len(), v.Len())
+// inf has to be kind of SLICE
+func getInterfacePointerSliceFromInterface(inf interface{}) []interface{} {
+	v := getDirectStructFromInterface(inf)
+	var objs []interface{}
 	for i := 0; i < v.Len(); i++ {
-		objs[i] = v.Index(i).Interface()
+		objs = append(objs, v.Index(i).Addr().Interface())
+	}
+	return objs
+}
+
+// inf has to be kind of SLICE
+func getInterfaceSliceFromInterface(inf interface{}) []interface{} {
+	v := getDirectStructFromInterface(inf)
+	var objs []interface{}
+	for i := 0; i < v.Len(); i++ {
+		objs = append(objs, v.Index(i).Interface())
 	}
 	return objs
 }
