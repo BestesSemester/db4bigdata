@@ -145,7 +145,7 @@ fake = Faker(locale_list)
 Faker.seed(some_seed)
 df_persons['EmailAddress'] = df_persons.apply(lambda x: fake.email(), axis = 1)
 
-df_persons['PersonID'] = df_persons.index
+df_persons['PersonID'] = df_persons.index + 1
 df_persons['Role'] = [get_role_dict_by_id(0).to_dict() for x in range(n_persons)]
 df_persons['RoleID'] = 1
 df_persons.drop(['PhoneNumber_pre', 'house_numbers_postfix_index', 'HouseNumber_onlyNumber', 'house_numbers_postfix'],axis=1,inplace=True)
@@ -227,7 +227,7 @@ df_invoices['OpenSum'] = 0
 df_invoices['Customer'] = list(df_persons[df_persons.RoleID==1].sample(n_invoices, replace = True).to_dict('records'))
 df_invoices['Agent'] =  list(df_persons[df_persons.RoleID!=1].sample(n_invoices, replace = True).to_dict('records'))
 df_invoices['AgentID'] = df_persons['PersonID']
-df_invoices['InvoiceID'] = df_invoices.index
+df_invoices['InvoiceID'] = df_invoices.index + 1
 
 
 
