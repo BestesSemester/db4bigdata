@@ -199,6 +199,7 @@ for level in agent_hierarchy_n:
 modification_date = datetime.datetime(2021, 1, 1).isoformat() + "Z"
 df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'Supervisor': lst_supervisors, 
                              'ModificationDate': modification_date, 'AgentStatus': 1})
+df_hierarchy.loc[ df_hierarchy["Supervisor"]== -1 , "Supervisor"] = None 
 
 
 #%% create invoices
