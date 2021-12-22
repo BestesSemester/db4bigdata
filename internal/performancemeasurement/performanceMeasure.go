@@ -45,7 +45,18 @@ func (p *PerformanceMeasurement) startWatchers() {
 	go p.startFileWriter()
 	go p.ReadMeasureTime()
 }
+func (p *PerformanceMeasurement) Start(operation string, interval time.Duration) {
+	p.stopChannelCPU = make(chan bool)
+	go p.readMeasureCPU(operation, interval)
+	p.stopChannelRAM = make(chan bool)
+	go p.ReadMeasureRAM(operation, interval)
+}
 
+func (p *PerformanceMeasurement) Stop() {
+	p.stopChannelCPU <- true
+	p.stopChannelRAM <- true
+
+}
 func (p *PerformanceMeasurement) MeasureTime(operation string, now time.Time) {
 	p.startMeasureTimeChannel <- TimeMeasurementParameters{
 		StartTime: now,
@@ -53,19 +64,14 @@ func (p *PerformanceMeasurement) MeasureTime(operation string, now time.Time) {
 	}
 }
 
-func (p *PerformanceMeasurement) MeasureCPU(operation string, interval time.Duration) {
-	p.stopChannelCPU = make(chan bool)
-	go p.readMeasureCPU(operation, interval)
-}
-
 func (p *PerformanceMeasurement) StopMeasureCPU() {
 	p.stopChannelCPU <- true
 }
 
-func (p *PerformanceMeasurement) MeasureRAM(operation string, interval time.Duration) {
-	p.stopChannelRAM = make(chan bool)
-	go p.ReadMeasureRAM(operation, interval)
-}
+//func (p *PerformanceMeasurement) MeasureRAM(operation string, interval time.Duration) {
+//	p.stopChannelRAM = make(chan bool)
+//	go p.ReadMeasureRAM(operation, interval)
+//}
 func (p *PerformanceMeasurement) StopMeasureRAM() {
 	p.stopChannelRAM <- true
 }
