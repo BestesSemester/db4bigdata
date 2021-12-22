@@ -23,10 +23,10 @@ type Person struct {
 	RegistrationDate time.Time `gogm:"name=registration_date"`
 	RoleID           int
 	Role             *Role      `gorm:"constraint:OnUpdate:CASCADE;OnDelete:SET NULL;" gogm:"direction=outgoing;relationship=hasRole"`
-	Supervisor       *Person    `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=supervised"`
+	Supervisor       *Person    `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=supervised_by"`
 	AgentInvoices    []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=sold"`
 	CustomerInvoices []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=bought"`
-	Employees        []*Person  `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=supervised"`
+	Employees        []*Person  `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=supervised_by"`
 }
 
 func InterconnectPersonRoles(pe *[]Person) {
@@ -66,4 +66,27 @@ func MatchPeopleAndInvoices(people []Person, in []Invoice) ([]Person, []Invoice)
 		outPeople = append(outPeople, p[k])
 	}
 	return outPeople, in
+}
+
+func MatchHirarchy(people []Person, hierarchy []Hierarchy) []Person {
+	p := make(map[int]Person)
+	for _, per := range people {
+		p[per.PersonID] = per
+	}
+	logrus.Println(p)
+	for i, hi := range hierarchy {
+		agent := p[hi.Agent.PersonID]
+		supervisor := p[hi.Supervisor.PersonID]
+		hierarchy[i].Agent = &agent
+		if &supervisor != nil {
+			hierarchy[i].Supervisor = &supervisor
+			agent.Supervisor = &supervisor
+			supervisor.Employees = append(supervisor.Employees, &agent)
+		}
+	}
+	outPeople := []Person{}
+	for k := range p {
+		outPeople = append(outPeople, p[k])
+	}
+	return outPeople
 }
