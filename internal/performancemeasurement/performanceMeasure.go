@@ -46,7 +46,7 @@ func (p *PerformanceMeasurement) startWatchers() {
 	go p.ReadMeasureTime()
 }
 
-func (p *PerformanceMeasurement) MeasureTime(now time.Time, operation string) {
+func (p *PerformanceMeasurement) MeasureTime(operation string, now time.Time) {
 	p.startMeasureTimeChannel <- TimeMeasurementParameters{
 		StartTime: now,
 		Operation: operation,
