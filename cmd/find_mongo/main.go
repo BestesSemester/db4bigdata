@@ -4,6 +4,7 @@ import (
 	// "git.sys-tem.org/caos/db4bigdata/internal/importer"
 
 	"errors"
+	"time"
 
 	"git.sys-tem.org/caos/db4bigdata/internal/model"
 	"git.sys-tem.org/caos/db4bigdata/internal/util"
@@ -15,16 +16,20 @@ import (
 // This package should run to find persons
 func main() {
 	util.SetupLogs()
-	logrus.Println("Start to calculate provision for all agents")
+
 	mongo, err := model.ConnectStorage(model.MongoDB)
 	if err != nil {
 		logrus.Fatal("Connect to MongoDB failed: ", err)
 	}
 
 	var all_invoices []model.Invoice
-	var result_persons []model.Person
 	provision_map := make(map[uint]float32)
 
+	logrus.Info("Start to calculate provision for all agents")
+
+	// pm := performancemeasurement.New(model.MongoDB, "horrorlog")
+	// pm.Start("test", 1*time.Second)
+	startTime := time.Now()
 	mongo.Find(bson.D{{}}, &all_invoices)
 	for _, invoice := range all_invoices {
 
@@ -32,7 +37,7 @@ func main() {
 		var invoice_provision = invoice.GrossSum * 0.1
 
 		var supervisorIds = findAllSupervisorsByAgentPersonId(mongo, agent.PersonID)
-		logrus.Debug("Supervisors for agent: ", agent.PersonID, " < ", supervisorIds, " > ")
+		// logrus.Debug("Supervisors for agent: ", agent.PersonID, " < ", supervisorIds, " > ")
 
 		if len(supervisorIds) > 0 { // Agent has supervisors
 			// 70% of provison for the agent
@@ -50,6 +55,11 @@ func main() {
 		}
 
 	}
+	// pm.Stop()
+	// pm.Run()
+	elapsed := time.Since(startTime)
+	logrus.Info("Finished to calculate provision for all agents in ", elapsed)
+
 	for key, value := range provision_map {
 		logrus.Info("Provsion for agent ", key, " is ", value)
 	}
@@ -59,10 +69,6 @@ func main() {
 	// Für alle Vertreter die Provision berechnen - Das ist die Summe der Provisionen aller Rechnungen.
 	// Die Provision einer Rechnung ist 10% -> Vertreter 70% Provision (100% wenn kein Parent). Die restlichen 30% werden gleichmäßig auf alle Parents verteilt
 	// Hilfstabelle erzeugen (evtl. in Memory)
-
-	for i, s := range result_persons {
-		logrus.Info(i, s)
-	}
 }
 
 func addProvisionToProvisionMap(m map[uint]float32, id int, provision float32) {
