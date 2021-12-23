@@ -37,7 +37,7 @@ func main() {
 		var invoice_provision = invoice.GrossSum * 0.1
 
 		var supervisorIds = findAllSupervisorsByAgentPersonId(mongo, agent.PersonID)
-		// logrus.Debug("Supervisors for agent: ", agent.PersonID, " < ", supervisorIds, " > ")
+		logrus.Debug("Supervisors for agent: ", agent.PersonID, " < ", supervisorIds, " > ")
 
 		if len(supervisorIds) > 0 { // Agent has supervisors
 			// 70% of provison for the agent
@@ -58,11 +58,12 @@ func main() {
 	// pm.Stop()
 	// pm.Run()
 	elapsed := time.Since(startTime)
-	logrus.Info("Finished to calculate provision for all agents in ", elapsed)
 
 	for key, value := range provision_map {
 		logrus.Info("Provsion for agent ", key, " is ", value)
 	}
+
+	logrus.Info("Finished to calculate provision for all agents in ", elapsed)
 
 	// Vertreter ID suchen und als Ausgabewert die Summe der Provisionen.
 	// Rechnung ID eingeben und als Ausgabewert die Provision der Rechnung
@@ -79,6 +80,7 @@ func addProvisionToProvisionMap(m map[uint]float32, id int, provision float32) {
 	}
 }
 
+// !!!! Attention - Recursive function !!!!
 func findAllSupervisorsByAgentPersonId(mongo model.Database, personID int) []int {
 	var ret []int
 	var supervisorId, err = findSupervisorIDByAgentPersonId(mongo, personID)
