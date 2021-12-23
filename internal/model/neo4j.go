@@ -74,8 +74,9 @@ func (neo4j *Neo4j) Save(obj interface{}) error {
 	case reflect.Array | reflect.Slice:
 		logrus.Println("found iterable")
 		objs := getInterfacePointerSliceFromInterface(obj)
-		for _, o := range objs {
-			err := neo4j.session.SaveDepth(context.Background(), o, 2)
+		for i, o := range objs {
+			logrus.Printf("Saving object no. %i", i)
+			err := neo4j.session.SaveDepth(context.Background(), o, 10)
 			if err != nil {
 				logrus.Errorln(err)
 				return err
