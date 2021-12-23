@@ -3,7 +3,6 @@ package model
 import (
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -49,7 +48,6 @@ func MatchPeopleAndInvoices(people []Person, in []Invoice) ([]Person, []Invoice)
 	for _, per := range people {
 		p[per.PersonID] = per
 	}
-	logrus.Println(p)
 	for i, invoice := range in {
 		save_invoice := invoice
 		agent := p[invoice.Agent.PersonID]
