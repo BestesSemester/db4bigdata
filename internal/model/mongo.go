@@ -81,11 +81,12 @@ func (mongo *MyMongo) Migrate(inf ...interface{}) error {
 
 // TODO: implement delete logic
 func (mongo *MyMongo) Delete(obj interface{}) error {
+	t := getDirectTypeFromInterface(obj)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	// TODO: How to get the collection name?
-	// coll := mongo.conn.Database(dbName).Collection(t.Elem().Name())
-	coll := mongo.conn.Database(dbName).Collection("Person")
+	coll := mongo.conn.Database(dbName).Collection(t.Elem().Name())
+	// coll := mongo.conn.Database(dbName).Collection("Person")
 	deleteResult, err := coll.DeleteMany(ctx, obj)
 	if err != nil {
 		log.Fatal(err)
@@ -97,12 +98,12 @@ func (mongo *MyMongo) Delete(obj interface{}) error {
 
 // Returns sql-Result
 func (mongo *MyMongo) Find(qry interface{}, target interface{}) error {
-	// t := reflect.TypeOf(target)
+	t := getDirectTypeFromInterface(target)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	// TODO: How to get the collection name?
-	// coll := mongo.conn.Database(dbName).Collection(t.Elem().Name())
-	coll := mongo.conn.Database(dbName).Collection("Person")
+	coll := mongo.conn.Database(dbName).Collection(t.Elem().Name())
+	// coll := mongo.conn.Database(dbName).Collection("Person")
 
 	cursor, err := coll.Find(ctx, qry)
 	if err != nil {
