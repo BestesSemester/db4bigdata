@@ -28,10 +28,10 @@ func main() {
 	hierarchy := []model.Hierarchy{}
 	importer.ImportPersonsFromJSON("./generators/output_data/persons.json", &people)
 	importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json", &hierarchy)
+	model.InterconnectPersonRoles(&people)
 	hpeople := model.MatchHirarchy(people, hierarchy)
 
 	importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json", &invoices)
-	model.InterconnectPersonRoles(&hpeople)
 	ipeople, invoices := model.MatchPeopleAndInvoices(hpeople, invoices)
 	//neo4j.Save(&invoices)
 	if err := neo4j.Save(&ipeople); err != nil {
