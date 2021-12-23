@@ -27,14 +27,15 @@ func main() {
 	invoices := []model.Invoice{}
 	hierarchy := []model.Hierarchy{}
 	importer.ImportPersonsFromJSON("./generators/output_data/persons.json", &people)
-	model.InterconnectPersonRoles(&people)
 	importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json", &hierarchy)
 	hpeople := model.MatchHirarchy(people, hierarchy)
 
 	importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json", &invoices)
+	model.InterconnectPersonRoles(&hpeople)
 	ipeople, invoices := model.MatchPeopleAndInvoices(hpeople, invoices)
 	//neo4j.Save(&invoices)
-	neo4j.Save(&ipeople)
-
+	if err := neo4j.Save(&ipeople); err != nil {
+		logrus.Errorln(err)
+	}
 	// mssql.Find("", &p)
 }

@@ -13,7 +13,6 @@ import (
 
 type Neo4jBaseNode struct {
 	Id *int64 `json:"-" gogm:"pk=default" gorm:"-" bson:"-"`
-
 	// LoadMap represents the state of how a node was loaded for neo4j.
 	// This is used to determine if relationships are removed on save
 	// field -- relations
@@ -71,11 +70,11 @@ func (neo4j *Neo4j) Save(obj interface{}) error {
 	logrus.Println(reflect.TypeOf(obj).Kind())
 	t := getDirectTypeFromInterface(obj)
 	switch t.Kind() {
-	case reflect.Array | reflect.Slice:
+	case reflect.Slice | reflect.Array:
 		logrus.Println("found iterable")
 		objs := getInterfacePointerSliceFromInterface(obj)
 		for i, o := range objs {
-			logrus.Printf("Saving object no. %i", i)
+			logrus.Printf("Saving object no. %d", i)
 			err := neo4j.session.Save(context.Background(), o)
 			if err != nil {
 				logrus.Errorln(err)
@@ -84,6 +83,7 @@ func (neo4j *Neo4j) Save(obj interface{}) error {
 		}
 	case reflect.Struct:
 		if err := neo4j.session.Save(context.Background(), obj); err != nil {
+			logrus.Errorln(err)
 			return err
 		}
 	default:
