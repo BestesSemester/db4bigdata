@@ -21,19 +21,17 @@ func main() {
 	// Call importer
 	// **** Following lines just works in debug mode ****
 
+	mssql.Migrate(&model.Person{}, &model.Role{}, &model.Hierarchy{}, &model.Invoice{}, &model.Provision{})
 	people := []model.Person{}
 	importer.ImportPersonsFromJSON("./generators/output_data/persons.json", &people)
-	mssql.Migrate(&model.Person{})
 	mssql.Save(&people)
 
 	hierarchies := []model.Hierarchy{}
 	importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json", &hierarchies)
-	mssql.Migrate(&model.Hierarchy{})
 	mssql.Save(&hierarchies)
 
 	invoices := []model.Invoice{}
 	importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json", &invoices)
-	mssql.Migrate(&model.Invoice{})
 	mssql.Save(&invoices)
 
 }

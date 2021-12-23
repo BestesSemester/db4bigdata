@@ -69,7 +69,7 @@ func (mssql *MsSQL) saveIterable(obj interface{}) error {
 	objs := getInterfacePointerSliceFromInterface(obj)
 	for _, o := range objs {
 		// save
-		mssql.db.Save(o)
+		mssql.db.Create(o)
 	}
 	return nil
 }
@@ -81,11 +81,27 @@ func (mssql *MsSQL) Delete(obj interface{}) error {
 
 // Returns sql-Result
 func (mssql *MsSQL) Find(qry interface{}, target interface{}) error {
-
-	mssql.db.Where(qry).First(&target)
 	t := reflect.TypeOf(target)
-	logrus.Println(t)
-	logrus.Println(getAsAbstractStructFieldSetFromInterface(target))
+	logrus.Printf("%d", t.Kind())
+	switch t.Kind() {
+	case reflect.Ptr:
+		fs := getAsAbstractStructFieldSetFromInterface(target)
+		joinableFields := []string{}
+		for _, field := range fs.fields {
+			if field.tp.Type.Kind() == reflect.Ptr && field.tp.Tag.Get("gorm") != "-" {
+				joinableFields = append(joinableFields, field.key)
+			}
+		}
+		logrus.Println(joinableFields)
+		var tx *gorm.DB
+		for _, preloadField := range joinableFields {
+			tx = mssql.db.Preload(preloadField).Joins(preloadField)
+		}
+		tx.Where(qry).First(&target)
+
+	default:
+		logrus.Errorln("no such implementation")
+	}
 	// logrus.Println(f.Tag.Get("mssql"))
 	return nil
 }
