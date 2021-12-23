@@ -30,11 +30,12 @@ func main() {
 	// pm := performancemeasurement.New(model.MongoDB, "horrorlog")
 	// pm.Start("test", 1*time.Second)
 	startTime := time.Now()
+	var invoice_sum = float32(0)
 	mongo.Find(bson.D{{}}, &all_invoices)
 	for _, invoice := range all_invoices {
-
+		invoice_sum = invoice_sum + invoice.NetSum
 		var agent = invoice.Agent
-		var invoice_provision = invoice.GrossSum * 0.1
+		var invoice_provision = invoice.NetSum * 0.1
 
 		var supervisorIds = findAllSupervisorsByAgentPersonId(mongo, agent.PersonID)
 		logrus.Debug("Supervisors for agent: ", agent.PersonID, " < ", supervisorIds, " > ")
@@ -59,11 +60,15 @@ func main() {
 	// pm.Run()
 	elapsed := time.Since(startTime)
 
+	var res = float32(0)
 	for key, value := range provision_map {
 		logrus.Info("Provsion for agent ", key, " is ", value)
+		res = res + value
 	}
 
 	logrus.Info("Finished to calculate provision for all agents in ", elapsed)
+	logrus.Info("Sum of provision: ", res)
+	logrus.Info("Sum of invoice net sum: ", invoice_sum)
 
 	// Vertreter ID suchen und als Ausgabewert die Summe der Provisionen.
 	// Rechnung ID eingeben und als Ausgabewert die Provision der Rechnung
@@ -90,7 +95,8 @@ func findAllSupervisorsByAgentPersonId(mongo model.Database, personID int) []int
 	}
 
 	if supervisorId == 0 { // If supervisorID is 0 this is the big boss
-		return append(ret, supervisorId)
+		// return append(ret, supervisorId)
+		return ret
 	} else {
 		return append(findAllSupervisorsByAgentPersonId(mongo, supervisorId), supervisorId)
 	}
