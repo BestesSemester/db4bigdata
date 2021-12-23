@@ -6,7 +6,7 @@ import (
 
 type Provision struct {
 	Neo4jBaseNode
-	ProvisionID      int
+	ProvisionID      int `gorm:"primaryKey;`
 	ProvisionAmount  float32
 	MainAgentAmount  float32
 	ModificationDate time.Time

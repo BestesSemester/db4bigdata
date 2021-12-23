@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Oct  2 10:59:36 2021
-
 @author: Markus Horst
 """
 #%% imports and initialization
@@ -146,7 +145,7 @@ fake = Faker(locale_list)
 Faker.seed(some_seed)
 df_persons['EmailAddress'] = df_persons.apply(lambda x: fake.email(), axis = 1)
 
-df_persons['PersonID'] = df_persons.index
+df_persons['PersonID'] = df_persons.index + 1
 df_persons['Role'] = [get_role_dict_by_id(0).to_dict() for x in range(n_persons)]
 df_persons['RoleID'] = 1
 df_persons.drop(['PhoneNumber_pre', 'house_numbers_postfix_index', 'HouseNumber_onlyNumber', 'house_numbers_postfix'],axis=1,inplace=True)
@@ -183,7 +182,7 @@ for level in agent_hierarchy_n:
     supervisor_offset = 0
     for agent_nr in agent_hierarchy_n[level]:
         if l == 1:
-            lst_supervisors = [None] * agent_nr
+            lst_supervisors = [-1] * agent_nr
         for j in range(agent_nr):
             if rolecount <= level:
                 l = rolecount - 1
@@ -198,8 +197,9 @@ for level in agent_hierarchy_n:
                 lst_supervisors.extend( [lst_agents[-1]]  * agent_hierarchy_n[level+1][j + supervisor_offset]  )
         supervisor_offset = supervisor_offset + agent_nr
 modification_date = datetime.datetime(2021, 1, 1).isoformat() + "Z"
-df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'Supervisor': pd.Series(lst_supervisors, dtype=pd.Int64Dtype()), 
+df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'Supervisor': lst_supervisors, 
                              'ModificationDate': modification_date, 'AgentStatus': 1})
+df_hierarchy.loc[ df_hierarchy["Supervisor"]== -1 , "Supervisor"] = None 
 
 
 #%% create invoices
@@ -226,7 +226,9 @@ df_invoices['InvoiceDate'] = df_invoices['InvoiceDate'].apply(lambda day: dateti
 df_invoices['OpenSum'] = 0
 df_invoices['Customer'] = list(df_persons[df_persons.RoleID==1].sample(n_invoices, replace = True).to_dict('records'))
 df_invoices['Agent'] =  list(df_persons[df_persons.RoleID!=1].sample(n_invoices, replace = True).to_dict('records'))
-df_invoices['InvoiceID'] = df_invoices.index
+df_invoices['AgentID'] = df_persons['PersonID']
+df_invoices['InvoiceID'] = df_invoices.index + 1
+
 
 
 def all_but(*names, df):

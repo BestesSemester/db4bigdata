@@ -2,12 +2,15 @@ package model
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Hierarchy struct {
+	gorm.Model       `bson:"-"`
 	Neo4jBaseNode    `bson:"-"`
-	Agent            *Person   `gogm:"startNode"`
-	Supervisor       *Person   `gogm:"endNode"`
+	Agent            *Person   `gorm:"foreignKey:PersonID" gogm:"startNode"`
+	Supervisor       *Person   `gorm:"foreignKey:PersonID" gogm:"endNode"`
 	ModificationDate time.Time `gogm:"name=modification_date"`
 	AgentStatus      *Status   `gogm:"name=agent_status"`
 }

@@ -81,7 +81,8 @@ func (mssql *MsSQL) Delete(obj interface{}) error {
 
 // Returns sql-Result
 func (mssql *MsSQL) Find(qry interface{}, target interface{}) error {
-	// mssql.conn.Exec(qry)
+
+	mssql.db.Where(qry).First(&target)
 	t := reflect.TypeOf(target)
 	logrus.Println(t)
 	logrus.Println(getAsAbstractStructFieldSetFromInterface(target))
