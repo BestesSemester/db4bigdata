@@ -25,12 +25,13 @@ func main() {
 	// **** Following lines just works in debug mode ****
 	people := []model.Person{}
 	invoices := []model.Invoice{}
-	//hierarchy := []model.Hierarchy{}
+	hierarchy := []model.Hierarchy{}
 	importer.ImportPersonsFromJSON("./generators/output_data/persons.json", &people)
 	model.InterconnectPersonRoles(&people)
 	importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json", &invoices)
 	people, invoices = model.MatchPeopleAndInvoices(people, invoices)
-	//importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json", &hierarchy)
+	importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json", &hierarchy)
+	people = model.MatchHirarchy(people, hierarchy)
 	neo4j.Save(&invoices)
 	//neo4j.Save(&hierarchy)
 
