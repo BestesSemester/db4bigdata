@@ -28,12 +28,13 @@ func main() {
 	hierarchy := []model.Hierarchy{}
 	importer.ImportPersonsFromJSON("./generators/output_data/persons.json", &people)
 	model.InterconnectPersonRoles(&people)
-	importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json", &invoices)
-	people, invoices = model.MatchPeopleAndInvoices(people, invoices)
 	importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json", &hierarchy)
-	people = model.MatchHirarchy(people, hierarchy)
-	neo4j.Save(&invoices)
-	//neo4j.Save(&hierarchy)
+	hpeople := model.MatchHirarchy(people, hierarchy)
+	neo4j.Save(&hpeople)
+
+	importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json", &invoices)
+	hpeople, invoices = model.MatchPeopleAndInvoices(hpeople, invoices)
+	//neo4j.Save(&invoices)
 
 	// mssql.Find("", &p)
 }

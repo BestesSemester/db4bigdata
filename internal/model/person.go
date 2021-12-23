@@ -73,15 +73,16 @@ func MatchHirarchy(people []Person, hierarchy []Hierarchy) []Person {
 	for _, per := range people {
 		p[per.PersonID] = per
 	}
-	logrus.Println(p)
-	for i, hi := range hierarchy {
-		agent := p[hi.Agent.PersonID]
-		supervisor := p[hi.Supervisor.PersonID]
-		hierarchy[i].Agent = &agent
-		if &supervisor != nil {
-			hierarchy[i].Supervisor = &supervisor
+	for _, hi := range hierarchy {
+		agentID := hi.Agent.PersonID
+
+		if hi.Supervisor != nil {
+			supervisor := p[hi.Supervisor.PersonID]
+			agent := p[agentID]
 			agent.Supervisor = &supervisor
+			p[agentID] = agent
 			supervisor.Employees = append(supervisor.Employees, &agent)
+			p[hi.Supervisor.PersonID] = supervisor
 		}
 	}
 	outPeople := []Person{}

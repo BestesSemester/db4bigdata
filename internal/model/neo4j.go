@@ -96,7 +96,7 @@ func (neo4j *Neo4j) Delete(obj interface{}) error {
 	return nil
 }
 
-// Returns sql-Result
+// Returns Neo4j-Result
 func (neo4j *Neo4j) Find(qry interface{}, target interface{}) error {
 	// mssql.conn.Exec(qry)
 	t := reflect.TypeOf(target)
@@ -106,6 +106,7 @@ func (neo4j *Neo4j) Find(qry interface{}, target interface{}) error {
 	return nil
 }
 
+//Migrate - does nothing
 func (neo4j *Neo4j) Migrate(inf ...interface{}) error {
 	return fmt.Errorf("no implementation")
 }
