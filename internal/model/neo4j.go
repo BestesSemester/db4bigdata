@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"reflect"
@@ -99,15 +100,16 @@ func (neo4j *Neo4j) Delete(obj interface{}) error {
 
 // Returns Neo4j-Result
 func (neo4j *Neo4j) Find(qry interface{}, target interface{}) error {
+	conditions, _ := json.Marshal(qry)
 	query := `
-MATCH p=(movie:Movie {title:$favorite})
+MATCH p=(m:Person $conditions)
 RETURN p
 `
-	err = neo4j.session.Query(context.Background(), query, map[string]interface{}{"favorite": "The Matrix"}, target)
+	logrus.Println(query)
+	neo4j.session.Query(context.Background(), query, map[string]interface{}{"conditions": conditions}, target)
 	t := reflect.TypeOf(target)
 	logrus.Println(t)
 	logrus.Println(getAsAbstractStructFieldSetFromInterface(target))
-	// logrus.Println(f.Tag.Get("mssql"))
 	return nil
 }
 
