@@ -99,7 +99,11 @@ func (neo4j *Neo4j) Delete(obj interface{}) error {
 
 // Returns Neo4j-Result
 func (neo4j *Neo4j) Find(qry interface{}, target interface{}) error {
-	// mssql.conn.Exec(qry)
+	query := `
+MATCH p=(movie:Movie {title:$favorite})
+RETURN p
+`
+	err = neo4j.session.Query(context.Background(), query, map[string]interface{}{"favorite": "The Matrix"}, target)
 	t := reflect.TypeOf(target)
 	logrus.Println(t)
 	logrus.Println(getAsAbstractStructFieldSetFromInterface(target))
