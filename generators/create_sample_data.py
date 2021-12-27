@@ -185,7 +185,7 @@ for level in agent_hierarchy_n:
     for agent_nr in agent_hierarchy_n[level]:
         if l == 1:
             lst_supervisors = [-1] * agent_nr
-            lst_supervisor_ids = [-1] * agent_nr
+            lst_supervisor_ids = [None] * agent_nr
         for j in range(agent_nr):
             if rolecount <= level:
                 l = rolecount - 1

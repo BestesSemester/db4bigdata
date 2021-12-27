@@ -2,7 +2,6 @@ package main
 
 import (
 	"git.sys-tem.org/caos/db4bigdata/internal/importer"
-
 	"git.sys-tem.org/caos/db4bigdata/internal/model"
 	"git.sys-tem.org/caos/db4bigdata/internal/util"
 
@@ -25,13 +24,12 @@ func main() {
 	people := []model.Person{}
 	importer.ImportPersonsFromJSON("./generators/output_data/persons.json", &people)
 	mssql.Save(&people)
+	invoices := []model.Invoice{}
+	importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json", &invoices)
+	mssql.Save(&invoices)
 
 	hierarchies := []model.Hierarchy{}
 	importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json", &hierarchies)
 	mssql.Save(&hierarchies)
-
-	invoices := []model.Invoice{}
-	importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json", &invoices)
-	mssql.Save(&invoices)
 
 }

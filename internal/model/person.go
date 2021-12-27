@@ -20,7 +20,7 @@ type Person struct {
 	BirthDate        time.Time `gogm:"name=birth_date"`
 	RegistrationDate time.Time `gogm:"name=registration_date"`
 	RoleID           int
-	Role             *Role      `gorm:"constraint:OnUpdate:CASCADE;OnDelete:SET NULL;" gogm:"direction=outgoing;relationship=hasRole"`
+	Role             *Role      `gogm:"direction=outgoing;relationship=hasRole"`
 	Supervisor       *Person    `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=supervised"`
 	AgentInvoices    []*Invoice `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=sold"`
 	CustomerInvoices []*Invoice `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=bought"`

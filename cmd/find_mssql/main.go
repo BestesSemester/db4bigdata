@@ -17,20 +17,10 @@ func main() {
 	if err != nil {
 		logrus.Fatalln(err)
 	}
-	mssql.Migrate(&model.Provision{}, &model.Invoice{})
+	mssql.Migrate(&model.Person{}, &model.Role{}, &model.Provision{}, &model.Invoice{})
 	p := model.Person{PersonID: 23}
 	//p := model.Person{Name: "Meier"}
 
-	p_target := model.Person{}
-
-	if err := mssql.Find(&p, &p_target); err != nil {
-		logrus.Errorln(err)
-	}
-	jp, err := json.MarshalIndent(&p_target, "", "	")
-	logrus.Println(string(jp))
-	if err != nil {
-		logrus.Errorln(err)
-	}
 	i := model.Invoice{InvoiceID: 14}
 	i_t := model.Invoice{}
 
@@ -42,5 +32,15 @@ func main() {
 		logrus.Errorln(err)
 	}
 	logrus.Println(string(ji))
+	p_target := model.Person{}
+
+	if err := mssql.Find(&p, &p_target); err != nil {
+		logrus.Errorln(err)
+	}
+	jp, err := json.MarshalIndent(&p_target, "", "	")
+	logrus.Println(string(jp))
+	if err != nil {
+		logrus.Errorln(err)
+	}
 
 }

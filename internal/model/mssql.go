@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"reflect"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/sqlserver"
@@ -87,23 +88,45 @@ func (mssql *MsSQL) Find(qry interface{}, target interface{}) error {
 	case reflect.Ptr:
 		fs := getAsAbstractStructFieldSetFromInterface(target)
 		joinableFields := []string{}
+		preloadableFields := []string{}
 		for _, field := range fs.fields {
 			if field.tp.Type.Kind() == reflect.Ptr && field.tp.Tag.Get("gorm") != "-" {
 				joinableFields = append(joinableFields, field.key)
+				_, preloads := mssql.resolveStructFields(field)
+				preloadableFields = append(preloadableFields, preloads...)
 			}
 		}
-		logrus.Println(joinableFields)
-		var tx *gorm.DB
-		for _, preloadField := range joinableFields {
-			tx = mssql.db.Preload(preloadField).Joins(preloadField)
+		logrus.Printf("Joining: %s", joinableFields)
+		logrus.Printf("Preloading: %s", preloadableFields)
+		tx := mssql.db.Set("gorm:auto_preload", true)
+		for _, joinableField := range joinableFields {
+			tx = tx.Joins(joinableField)
 		}
-		tx.Where(qry).First(&target)
-
+		for _, preloadField := range preloadableFields {
+			tx = tx.Preload(preloadField)
+		}
+		tx.Debug().Where(qry).Find(&target)
 	default:
 		logrus.Errorln("no such implementation")
 	}
-	// logrus.Println(f.Tag.Get("mssql"))
 	return nil
+}
+
+func (mssql *MsSQL) resolveStructFields(structure abstractStructField) ([]string, []string) {
+	logrus.Println(structure)
+	joinlist := []string{}
+	preloadlist := []string{}
+	parent := structure.tp
+	for i := 0; i < parent.Type.Elem().NumField(); i++ {
+		child := parent.Type.Elem().Field(i)
+		if child.Type.Kind() == reflect.Ptr && child.Tag.Get("gorm") != "-" {
+			logrus.Println(child)
+			joinTableName := parent.Name + "_" + child.Name
+			joinlist = append(joinlist, "JOIN "+strings.ToLower(child.Name)+"s "+joinTableName+" on "+strings.ToLower(parent.Name)+"."+strings.ToLower(child.Name)+"_id="+joinTableName+"."+strings.ToLower(child.Name)+"_id")
+			preloadlist = append(preloadlist, parent.Name+"."+child.Name)
+		}
+	}
+	return joinlist, preloadlist
 }
 
 // Closes the database connection (should only be used if you close it on purpose)
