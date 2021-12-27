@@ -21,7 +21,8 @@ type Person struct {
 	RegistrationDate time.Time `gogm:"name=registration_date"`
 	RoleID           int
 	Role             *Role      `gogm:"direction=outgoing;relationship=hasRole"`
-	Supervisor       *Person    `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=supervised"`
+	SupervisorID     *int       `gogm:"-"`
+	Supervisor       *Person    `bson:"-" gogm:"direction=outgoing;relationship=supervised"`
 	AgentInvoices    []*Invoice `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=sold"`
 	CustomerInvoices []*Invoice `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=bought"`
 	Employees        []*Person  `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=supervised"`
