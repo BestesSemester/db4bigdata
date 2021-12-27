@@ -17,22 +17,12 @@ func main() {
 	if err != nil {
 		logrus.Fatalln(err)
 	}
-	mssql.Migrate(&model.Provision{}, &model.Invoice{})
-	p := model.Person{PersonID: 23}
-	//p := model.Person{Name: "Meier"}
 
-	p_target := model.Person{}
+	mssql.Migrate(&model.Provision{}, &model.Invoice{}, &model.ProvisionDistribution{})
 
-	if err := mssql.Find(&p, &p_target); err != nil {
-		logrus.Errorln(err)
-	}
-	jp, err := json.MarshalIndent(&p_target, "", "	")
-	logrus.Println(string(jp))
-	if err != nil {
-		logrus.Errorln(err)
-	}
-	i := model.Invoice{InvoiceID: 14}
-	i_t := model.Invoice{}
+	i := model.ProvisionDistribution{AgentID: 1080, InvoiceID: 114}
+
+	i_t := model.ProvisionDistribution{}
 
 	if err := mssql.Find(&i, &i_t); err != nil {
 		logrus.Errorln(err)

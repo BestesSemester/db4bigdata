@@ -11,7 +11,7 @@ import (
 
 type Database interface {
 	Save(obj interface{}) error
-	Delete(obj interface{}) error
+	Delete_Statement(obj interface{}) error
 	Find(qry interface{}, obj interface{}) error
 	Migrate(inf ...interface{}) error
 	Close() error

@@ -80,7 +80,7 @@ func (mongo *MyMongo) Migrate(inf ...interface{}) error {
 }
 
 // TODO: implement delete logic
-func (mongo *MyMongo) Delete(obj interface{}) error {
+func (mongo *MyMongo) Delete_Statement(obj interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	// TODO: How to get the collection name?

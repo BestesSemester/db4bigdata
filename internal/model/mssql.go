@@ -75,17 +75,52 @@ func (mssql *MsSQL) saveIterable(obj interface{}) error {
 }
 
 // TODO: implement delete logic
-func (mssql *MsSQL) Delete(obj interface{}) error {
+func (mssql *MsSQL) Delete_Statement(obj interface{}) error {
+	mssql.db.Delete(&obj)
 	return nil
 }
 
 // Returns sql-Result
 func (mssql *MsSQL) Find(qry interface{}, target interface{}) error {
+	var agents []string
+	i_t := Invoice{}
+	//select the agents in invoices
+	mssql.db.Model(&i_t).Distinct().Pluck("Agent_ID", &agents)
+
+	//write all provisions into table
+	for _, agent := range agents {
+		//logrus.Println(agent)
+
+		mssql.db.Exec(`WITH  temp2 as( select agent_id , supervisor_id
+				from hierarchies
+				where agent_id = ?
+				union all
+				select a.agent_id, a.supervisor_id
+				from hierarchies a inner join temp2 on temp2.supervisor_id = a.agent_id
+						)
+		insert into provision_distributions
+			select i.[Invoice_ID], t.agent_id, 
+			case 
+				when (t.agent_id = ? and (select count(*) from temp2) > 1 )
+					then i.net_Sum * 0.7 * 0.1	
+				when (t.agent_id = 1080
+					and (select count(*) from temp2) = 1) then i.net_Sum * 0.1			
+				else i.net_Sum *0.1 * 0.3/((select count(*) from temp2)-1) 
+			end provision
+			from temp2 t, [dbo].[invoices] i
+			where i.agent_id = ? 	
+			and invoice_id not in (select invoice_id from provision_distributions)	
+			order by Invoice_ID`, agent, agent, agent)
+	}
+
 	t := reflect.TypeOf(target)
 	logrus.Printf("%d", t.Kind())
 	switch t.Kind() {
 	case reflect.Ptr:
-		fs := getAsAbstractStructFieldSetFromInterface(target)
+		logrus.Println("Here comes the statement:")
+
+		mssql.db.Where(qry).Find(&target)
+		/*fs := getAsAbstractStructFieldSetFromInterface(target)
 		joinableFields := []string{}
 		for _, field := range fs.fields {
 			if field.tp.Type.Kind() == reflect.Ptr && field.tp.Tag.Get("gorm") != "-" {
@@ -97,7 +132,7 @@ func (mssql *MsSQL) Find(qry interface{}, target interface{}) error {
 		for _, preloadField := range joinableFields {
 			tx = mssql.db.Preload(preloadField).Joins(preloadField)
 		}
-		tx.Where(qry).First(&target)
+		tx.Where(qry).First(&target)*/
 
 	default:
 		logrus.Errorln("no such implementation")

@@ -92,7 +92,7 @@ func (neo4j *Neo4j) Save(obj interface{}) error {
 }
 
 // TODO: implement delete logic
-func (neo4j *Neo4j) Delete(obj interface{}) error {
+func (neo4j *Neo4j) Delete_Statement(obj interface{}) error {
 	return nil
 }
 
