@@ -18,29 +18,39 @@ func main() {
 		logrus.Fatalln(err)
 	}
 	mssql.Migrate(&model.Person{}, &model.Role{}, &model.Provision{}, &model.Invoice{})
-	p := model.Person{PersonID: 23}
+	person := model.Person{PersonID: 23}
 	//p := model.Person{Name: "Meier"}
 
-	i := model.Invoice{InvoiceID: 14}
-	i_t := model.Invoice{}
+	invoice := model.Invoice{InvoiceID: 14}
 
-	if err := mssql.Find(&i, &i_t); err != nil {
+	if err := mssql.Find(&invoice, &invoice); err != nil {
 		logrus.Errorln(err)
 	}
-	ji, err := json.MarshalIndent(&i_t, "", "	")
+	ji, err := json.MarshalIndent(&invoice, "", "	")
 	if err != nil {
 		logrus.Errorln(err)
 	}
 	logrus.Println(string(ji))
-	p_target := model.Person{}
 
-	if err := mssql.Find(&p, &p_target); err != nil {
+	if err := mssql.Find(&person, &person); err != nil {
 		logrus.Errorln(err)
 	}
-	jp, err := json.MarshalIndent(&p_target, "", "	")
+	jp, err := json.MarshalIndent(&person, "", "	")
 	logrus.Println(string(jp))
 	if err != nil {
 		logrus.Errorln(err)
 	}
+
+	hierarchy := &model.Hierarchy{
+		AgentID: 2305,
+	}
+	if err := mssql.Find(hierarchy, hierarchy); err != nil {
+		logrus.Errorln(err)
+	}
+	jh, err := json.MarshalIndent(hierarchy, "", "	")
+	if err != nil {
+		logrus.Errorln(err)
+	}
+	logrus.Println(string(jh))
 
 }
