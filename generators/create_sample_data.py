@@ -250,8 +250,8 @@ out_json = (df_persons
 with open(r'./output_data/persons.json', 'w') as f:
     f.write(out_json)
     
-# out_json = df_hierarchy.to_json(orient='records')
-out_json = df_hierarchy.apply(lambda x: [x.dropna()], axis=1).to_json()
+out_json = df_hierarchy.to_json(orient='records')
+# out_json = df_hierarchy.apply(lambda x: [x.dropna()], axis=1).to_json()
 with open(r'./output_data/hierarchy.json', 'w') as f:
     f.write(out_json)  
     

@@ -11,7 +11,7 @@ type Hierarchy struct {
 	Neo4jBaseNode    `bson:"-"`
 	AgentID          int
 	Agent            *Person
-	SupervisorID     int
+	SupervisorID     *int
 	Supervisor       *Person
 	ModificationDate time.Time
 	AgentStatus      *Status
