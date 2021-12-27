@@ -89,10 +89,12 @@ func (mssql *MsSQL) Find(qry interface{}, target interface{}) error {
 		joinableFields := []string{}
 		preloadableFields := []string{}
 		for _, field := range fs.fields {
-			if field.tp.Type.Kind() == reflect.Ptr && field.tp.Tag.Get("gorm") != "-" {
+			if field.tp.Type.Kind() == reflect.Ptr && (field.tp.Type.Elem().Kind() == reflect.Struct || field.tp.Type.Elem().Kind() == reflect.Slice || field.tp.Type.Elem().Kind() == reflect.Array) && field.tp.Tag.Get("gorm") != "-" {
 				joinableFields = append(joinableFields, field.key)
 				preloads := mssql.resolveStructFields(field, field.key)
-				preloadableFields = append(preloadableFields, preloads...)
+				if preloads != nil {
+					preloadableFields = append(preloadableFields, preloads...)
+				}
 			}
 		}
 		logrus.Printf("Joining: %s", joinableFields)
@@ -119,6 +121,9 @@ func (mssql *MsSQL) resolveStructFields(structure abstractStructField, parentnam
 	if parentType.Kind() == reflect.Ptr {
 		parentType = parentType.Elem()
 	}
+	if parentType.Kind() != reflect.Struct {
+		return nil
+	}
 	for i := 0; i < parentType.NumField(); i++ {
 		child := parentType.Field(i)
 		if child.Type.Kind() == reflect.Ptr && child.Tag.Get("gorm") != "-" {
@@ -129,6 +134,9 @@ func (mssql *MsSQL) resolveStructFields(structure abstractStructField, parentnam
 			}
 			fieldnames := mssql.resolveStructFields(field, parentname+"."+child.Name)
 			logrus.Println(fieldnames)
+			if fieldnames != nil {
+				preloadlist = append(preloadlist, fieldnames...)
+			}
 		}
 	}
 	return preloadlist
