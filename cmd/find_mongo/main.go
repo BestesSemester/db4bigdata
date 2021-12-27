@@ -69,13 +69,12 @@ func main() {
 			// No supervisor whole provision for the agent
 			addProvisionToProvisionMap(provision_map, invoice_agentID, invoice_provision)
 		}
-
 	}
 	// pm.Stop()
 	// pm.Run()
 	elapsed := time.Since(startTime)
 
-	logrus.Info("Finished to calculate provision for all agents in ", elapsed)
+	logrus.Info("Finished to calculate provision in ", elapsed)
 	logrus.Info("Provsion for agent ", agentId, " is ", provision_map[uint(agentId)])
 }
 

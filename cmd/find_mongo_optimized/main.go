@@ -73,7 +73,6 @@ func main() {
 			// No supervisor whole provision for the agent
 			addProvisionToProvisionMap(provision_map, invoice_agentID, invoice_provision)
 		}
-
 	}
 	// pm.Stop()
 	// pm.Run()
