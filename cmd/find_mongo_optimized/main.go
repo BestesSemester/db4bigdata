@@ -20,7 +20,6 @@ func main() {
 	// AgentID, StartPayDate, EndPayDate
 	util.SetupLogs()
 	argsWithoutProg := os.Args[1:]
-	// logrus.Debug(argsWithoutProg)
 
 	agentId, _ := strconv.Atoi(argsWithoutProg[0])
 	startDate, _ := time.Parse("2006-01-02", argsWithoutProg[1])
@@ -40,20 +39,25 @@ func main() {
 	// pm := performancemeasurement.New(model.MongoDB, "horrorlog")
 	// pm.Start("test", 1*time.Second)
 	startTime := time.Now()
+	var invoice_sum = float32(0)
 
+	downline_ids := findAllDownlineAgents(mongo, agentId)
+	// mongo.Find(bson.D{{"agent.personid", bson.D{{"$in", downline_ids}}}}, &all_invoices)
 	mongo.Find(bson.D{
 		{"invoicedate", bson.D{{"$gte", startDate}, {"$lt", endDate}}},
+		{"agent.personid", bson.D{{"$in", downline_ids}}},
 	}, &all_invoices)
 
 	for _, invoice := range all_invoices {
+		invoice_sum = invoice_sum + invoice.NetSum
 		var invoice_agentID = invoice.Agent.PersonID
 		var invoice_provision = invoice.NetSum * 0.1
 
+		// If we don´t know supervisors, request them from db
 		if _, found := supervisors_map[uint(invoice_agentID)]; !found {
 			supervisors_map[uint(invoice_agentID)] = findAllSupervisorsByAgentPersonId(mongo, invoice_agentID)
 		}
 		var supervisorIds = supervisors_map[uint(invoice_agentID)]
-		// logrus.Debug("Supervisors for agent: ", agent.PersonID, " < ", supervisorIds, " > ")
 
 		if len(supervisorIds) > 0 { // Agent has supervisors
 			// 70% of provison for the agent
@@ -75,7 +79,7 @@ func main() {
 	// pm.Run()
 	elapsed := time.Since(startTime)
 
-	logrus.Info("Finished to calculate provision for all agents in ", elapsed)
+	logrus.Info("Finished to calculate provision in ", elapsed)
 	logrus.Info("Provsion for agent ", agentId, " is ", provision_map[uint(agentId)])
 }
 
@@ -120,4 +124,36 @@ func findSupervisorIDByAgentPersonId(mongo model.Database, personID int) (int, e
 			return agent_hierarchy[0].Supervisor.PersonID, nil
 		}
 	}
+}
+
+// !!!! Attention - Recursive function !!!!
+func findAllDownlineAgents(mongo model.Database, personID int) []int {
+	ret := []int{personID}
+	var agentIds, err = findAgentsBySupervisorId(mongo, personID)
+	if err != nil {
+		logrus.Error(err)
+		return ret
+	}
+
+	if len(agentIds) == 0 {
+		return ret
+	} else {
+		for _, agentId := range agentIds {
+			ret = append(findAllDownlineAgents(mongo, agentId), ret...)
+		}
+		return ret
+	}
+}
+
+func findAgentsBySupervisorId(mongo model.Database, personID int) ([]int, error) {
+	var agent_hierarchy []model.Hierarchy
+	var agent_hierarchy_qry = bson.D{{"supervisor.personid", personID}}
+
+	mongo.Find(agent_hierarchy_qry, &agent_hierarchy)
+
+	ret := make([]int, len(agent_hierarchy))
+	for i, agent := range agent_hierarchy {
+		ret[i] = agent.Agent.PersonID
+	}
+	return ret, nil
 }
