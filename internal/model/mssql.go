@@ -69,7 +69,7 @@ func (mssql *MsSQL) saveIterable(obj interface{}) error {
 	objs := getInterfacePointerSliceFromInterface(obj)
 	for _, o := range objs {
 		// save
-		mssql.db.Save(o)
+		mssql.db.Create(o)
 	}
 	return nil
 }
@@ -81,13 +81,57 @@ func (mssql *MsSQL) Delete(obj interface{}) error {
 
 // Returns sql-Result
 func (mssql *MsSQL) Find(qry interface{}, target interface{}) error {
-
-	mssql.db.Where(qry).First(&target)
 	t := reflect.TypeOf(target)
-	logrus.Println(t)
-	logrus.Println(getAsAbstractStructFieldSetFromInterface(target))
-	// logrus.Println(f.Tag.Get("mssql"))
+	logrus.Printf("%d", t.Kind())
+	switch t.Kind() {
+	case reflect.Ptr:
+		fs := getAsAbstractStructFieldSetFromInterface(target)
+		joinableFields := []string{}
+		preloadableFields := []string{}
+		for _, field := range fs.fields {
+			if field.tp.Type.Kind() == reflect.Ptr && field.tp.Tag.Get("gorm") != "-" {
+				joinableFields = append(joinableFields, field.key)
+				preloads := mssql.resolveStructFields(field, field.key)
+				preloadableFields = append(preloadableFields, preloads...)
+			}
+		}
+		logrus.Printf("Joining: %s", joinableFields)
+		logrus.Printf("Preloading: %s", preloadableFields)
+		tx := mssql.db.Set("gorm:auto_preload", true)
+		for _, joinableField := range joinableFields {
+			tx = tx.Joins(joinableField)
+		}
+		for _, preloadField := range preloadableFields {
+			tx = tx.Preload(preloadField)
+		}
+		tx.Debug().Where(qry).Find(&target)
+	default:
+		logrus.Errorln("no such implementation")
+	}
 	return nil
+}
+
+func (mssql *MsSQL) resolveStructFields(structure abstractStructField, parentname string) []string {
+	logrus.Println(structure)
+	preloadlist := []string{}
+	parent := structure.tp
+	parentType := parent.Type
+	if parentType.Kind() == reflect.Ptr {
+		parentType = parentType.Elem()
+	}
+	for i := 0; i < parentType.NumField(); i++ {
+		child := parentType.Field(i)
+		if child.Type.Kind() == reflect.Ptr && child.Tag.Get("gorm") != "-" {
+			logrus.Println(child)
+			preloadlist = append(preloadlist, parentname+"."+child.Name)
+			field := abstractStructField{
+				tp: child,
+			}
+			fieldnames := mssql.resolveStructFields(field, parentname+"."+child.Name)
+			logrus.Println(fieldnames)
+		}
+	}
+	return preloadlist
 }
 
 // Closes the database connection (should only be used if you close it on purpose)
