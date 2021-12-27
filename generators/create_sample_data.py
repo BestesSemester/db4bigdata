@@ -185,7 +185,7 @@ for level in agent_hierarchy_n:
     for agent_nr in agent_hierarchy_n[level]:
         if l == 1:
             lst_supervisors = [-1] * agent_nr
-            lst_supervisor_ids = [None] * agent_nr
+            lst_supervisor_ids = [-1] * agent_nr
         for j in range(agent_nr):
             if rolecount <= level:
                 l = rolecount - 1
@@ -197,7 +197,7 @@ for level in agent_hierarchy_n:
             person.RoleID = person.Role["RoleID"]
             df_persons.at[lst_agents[-1]["PersonID"]] = person
             if l != 1:
-                lst_supervisor_ids.append(lst_supervisors[pos]["PersonID"])
+                lst_supervisor_ids.append(int(lst_supervisors[pos]["PersonID"]))
             pos += 1
             if level < list(agent_hierarchy_n.keys())[-1] :
                 lst_supervisors.extend( [lst_agents[-1]]  * agent_hierarchy_n[level+1][j + supervisor_offset]  )
@@ -205,7 +205,8 @@ for level in agent_hierarchy_n:
 modification_date = datetime.datetime(2021, 1, 1).isoformat() + "Z"
 df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'AgentID': lst_agent_ids, 'SupervisorID': lst_supervisor_ids, 'Supervisor': lst_supervisors, 
                              'ModificationDate': modification_date, 'AgentStatus': 1})
-df_hierarchy.loc[ df_hierarchy["Supervisor"]== -1 , "Supervisor"] = None 
+df_hierarchy.loc[ df_hierarchy["Supervisor"]== -1 , "Supervisor"] = None
+df_hierarchy.SupervisorID = df_hierarchy.SupervisorID.astype(int)
 
 
 #%% create invoices
