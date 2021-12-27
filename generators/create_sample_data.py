@@ -206,7 +206,9 @@ modification_date = datetime.datetime(2021, 1, 1).isoformat() + "Z"
 df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'AgentID': lst_agent_ids, 'SupervisorID': lst_supervisor_ids, 'Supervisor': lst_supervisors, 
                              'ModificationDate': modification_date, 'AgentStatus': 1})
 df_hierarchy.loc[ df_hierarchy["Supervisor"]== -1 , "Supervisor"] = None
-df_hierarchy.SupervisorID = df_hierarchy.SupervisorID.astype(int)
+df_hierarchy.loc[ df_hierarchy["SupervisorID"]== -1 , "SupervisorID"] = None
+df_hierarchy.SupervisorID = df_hierarchy.SupervisorID.astype(pd.Int64Dtype())
+
 
 
 #%% create invoices
@@ -248,7 +250,8 @@ out_json = (df_persons
 with open(r'./output_data/persons.json', 'w') as f:
     f.write(out_json)
     
-out_json = df_hierarchy.to_json(orient='records')
+# out_json = df_hierarchy.to_json(orient='records')
+out_json = df_hierarchy.apply(lambda x: [x.dropna()], axis=1).to_json()
 with open(r'./output_data/hierarchy.json', 'w') as f:
     f.write(out_json)  
     
