@@ -100,13 +100,16 @@ func (neo4j *Neo4j) Delete(obj interface{}) error {
 
 // Returns Neo4j-Result
 func (neo4j *Neo4j) Find(qry interface{}, target interface{}) error {
-	conditions, _ := json.Marshal(qry)
 	query := `
-MATCH p=(m:Person $conditions)
-RETURN p
+MATCH (p:Person {person_id: $PersonID})-[*]->(n)
+RETURN p,n
 `
-	logrus.Println(query)
-	neo4j.session.Query(context.Background(), query, map[string]interface{}{"conditions": conditions}, target)
+
+	var qryInterface map[string]interface{}
+	inrec, _ := json.Marshal(qry)
+	json.Unmarshal(inrec, &qryInterface)
+	logrus.Println(qryInterface)
+	neo4j.session.Query(context.Background(), query, qryInterface, target)
 	t := reflect.TypeOf(target)
 	logrus.Println(t)
 	logrus.Println(getAsAbstractStructFieldSetFromInterface(target))
