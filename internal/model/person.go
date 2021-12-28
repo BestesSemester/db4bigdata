@@ -18,9 +18,9 @@ type Person struct {
 	BirthDate        time.Time `gogm:"name=birth_date"`
 	RegistrationDate time.Time `gogm:"name=registration_date"`
 	RoleID           int
-	Role             *Role      `gorm:"constraint:OnUpdate:CASCADE;OnDelete:SET NULL;" gogm:"direction=outgoing;relationship=hasRole"`
+	Role             *Role      `gogm:"direction=outgoing;relationship=hasRole"`
 	SupervisorID     *int       `gogm:"-"`
-	Supervisor       *Person    `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=supervised_by"`
+	Supervisor       *Person    `bson:"-" gogm:"direction=outgoing;relationship=supervised_by"`
 	AgentInvoices    []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=sold"`
 	CustomerInvoices []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=bought"`
 	Employees        []*Person  `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=supervised_by"`
@@ -77,6 +77,7 @@ func MatchHirarchy(people []Person, hierarchy []Hierarchy) []Person {
 			supervisor := p[hi.Supervisor.PersonID]
 			agent := p[agentID]
 			agent.Supervisor = supervisor
+			agent.SupervisorID = &supervisor.PersonID
 			supervisor.Employees = append(supervisor.Employees, agent)
 		}
 		// if agentID == 1078 {

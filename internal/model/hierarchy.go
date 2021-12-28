@@ -10,9 +10,9 @@ type Hierarchy struct {
 	gorm.Model
 	Neo4jBaseNode    `bson:"-"`
 	AgentID          int
-	Agent            *Person `gorm:"foreignKey:PersonID" gogm:"startNode"`
+	Agent            *Person `gogm:"startNode"`
 	SupervisorID     *int
-	Supervisor       *Person   `gorm:"foreignKey:PersonID" gogm:"endNode"`
+	Supervisor       *Person   `gogm:"endNode"`
 	ModificationDate time.Time `gogm:"name=modification_date"`
 	AgentStatus      *Status   `gogm:"name=agent_status"`
 }

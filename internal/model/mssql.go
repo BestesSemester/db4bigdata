@@ -21,6 +21,8 @@ type MsSQL struct {
 	db *gorm.DB
 }
 
+var depth = 0
+
 func ConnectMsSQL(conf *MsSQLConfig) (Database, error) {
 	mssql := &MsSQL{}
 	// conn, err := sql.Open("mssql", conf.Database)
@@ -69,7 +71,7 @@ func (mssql *MsSQL) saveIterable(obj interface{}) error {
 	objs := getInterfacePointerSliceFromInterface(obj)
 	for _, o := range objs {
 		// save
-		mssql.db.Create(o)
+		mssql.db.FirstOrCreate(o)
 	}
 	return nil
 }
@@ -91,7 +93,7 @@ func (mssql *MsSQL) Find(qry interface{}, target interface{}) error {
 		for _, field := range fs.fields {
 			if field.tp.Type.Kind() == reflect.Ptr && (field.tp.Type.Elem().Kind() == reflect.Struct || field.tp.Type.Elem().Kind() == reflect.Slice || field.tp.Type.Elem().Kind() == reflect.Array) && field.tp.Tag.Get("gorm") != "-" {
 				joinableFields = append(joinableFields, field.key)
-				preloads := mssql.resolveStructFields(field, field.key)
+				preloads := mssql.resolveStructFields(field, field.key, 6)
 				if preloads != nil {
 					preloadableFields = append(preloadableFields, preloads...)
 				}
@@ -113,8 +115,12 @@ func (mssql *MsSQL) Find(qry interface{}, target interface{}) error {
 	return nil
 }
 
-func (mssql *MsSQL) resolveStructFields(structure abstractStructField, parentname string) []string {
-	logrus.Println(structure)
+func (mssql *MsSQL) resolveStructFields(structure abstractStructField, parentname string, maxdepth int) []string {
+	// logrus.Println(structure)
+	if depth >= maxdepth {
+		return nil
+	}
+	depth++
 	preloadlist := []string{}
 	parent := structure.tp
 	parentType := parent.Type
@@ -132,8 +138,8 @@ func (mssql *MsSQL) resolveStructFields(structure abstractStructField, parentnam
 			field := abstractStructField{
 				tp: child,
 			}
-			fieldnames := mssql.resolveStructFields(field, parentname+"."+child.Name)
-			logrus.Println(fieldnames)
+			fieldnames := mssql.resolveStructFields(field, parentname+"."+child.Name, 6)
+			// logrus.Println(fieldnames)
 			if fieldnames != nil {
 				preloadlist = append(preloadlist, fieldnames...)
 			}

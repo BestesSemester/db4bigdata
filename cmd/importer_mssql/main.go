@@ -23,13 +23,14 @@ func main() {
 	mssql.Migrate(&model.Person{}, &model.Role{}, &model.Hierarchy{}, &model.Invoice{}, &model.Provision{})
 	people := []model.Person{}
 	importer.ImportPersonsFromJSON("./generators/output_data/persons.json", &people)
-	mssql.Save(&people)
 	invoices := []model.Invoice{}
 	importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json", &invoices)
 	mssql.Save(&invoices)
 
 	hierarchies := []model.Hierarchy{}
 	importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json", &hierarchies)
+	people = model.MatchHirarchy(people, hierarchies)
+	mssql.Save(&people)
 	mssql.Save(&hierarchies)
 
 }
