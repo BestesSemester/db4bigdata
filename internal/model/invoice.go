@@ -2,28 +2,22 @@ package model
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type Invoice struct {
-	gorm.Model    `bson:"-"`
 	Neo4jBaseNode `bson:"-"`
-	InvoiceID     int
-	InvoiceDate   time.Time
-	Customer      *Person `gorm:"foreignKey:PersonID"; gogm:"direction=outgoing;relationship=bought"`
-	//Name          string
-	//FirstName     string
-	//StreetHouseno string
-	//ZipCode       int
-	//Residence     string
-	AgentID      int
-	Agent        *Person `gorm:"foreignKey:PersonID"; gogm:"direction=outgoing;relationship=sold"`
-	NetSum       float32
-	VAT          float32
-	GrossSum     float32
-	Provision    *Provision `gorm:"foreignKey:ProvisionID"`
-	ProvisionSum float32
-	PayDate      time.Time
-	OpenSum      float32
+	InvoiceID     int       `gogm:"name=invoice_id"`
+	InvoiceDate   time.Time `gogm:"name=invoice_date"`
+	CustomerID    int
+	Customer      *Person `gogm:"direction=incoming;relationship=bought"`
+	AgentID       int
+	Agent         *Person `gogm:"direction=incoming;relationship=sold"`
+	NetSum        float32 `gogm:"name=netto_sum"`
+	VAT           float32 `gogm:"name=VAT"`
+	GrossSum      float32 `gogm:"name=brutto_sum"`
+	ProvisionID   *int
+	Provision     *Provision //`gogm:"direction=outgoing;relationship=contains"`
+	ProvisionSum  float32    `gogm:"name=provision_sum"`
+	PayDate       time.Time  `gogm:"name=pay_date"`
+	OpenSum       float32    `gogm:"name=open_sum"`
 }

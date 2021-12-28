@@ -25,7 +25,7 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/jinzhu/now v1.1.3 // indirect
+	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/kamva/mgm/v3 v3.4.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/mindstand/go-cypherdsl v0.2.0 // indirect
@@ -34,6 +34,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/testify v1.6.1 // indirect
+	github.com/systematiccaos/gorm v1.22.6 // indirect
 	github.com/tklauser/go-sysconf v0.3.9 // indirect
 	github.com/tklauser/numcpus v0.3.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
@@ -47,3 +48,5 @@ require (
 	golang.org/x/text v0.3.6 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
+
+replace gorm.io/gorm v1.22.4 => github.com/systematiccaos/gorm v1.22.5

@@ -7,12 +7,14 @@ import (
 )
 
 type Hierarchy struct {
-	gorm.Model       `bson:"-"`
+	gorm.Model
 	Neo4jBaseNode    `bson:"-"`
-	Agent            *Person `gorm:"foreignKey:PersonID"`
-	Supervisor       *Person `gorm:"foreignKey:PersonID"`
-	ModificationDate time.Time
-	AgentStatus      *Status
+	AgentID          int
+	Agent            *Person `gogm:"startNode"`
+	SupervisorID     *int
+	Supervisor       *Person   `gogm:"endNode"`
+	ModificationDate time.Time `gogm:"name=modification_date"`
+	AgentStatus      *Status   `gogm:"name=agent_status"`
 }
 
 type Status int

@@ -21,7 +21,8 @@ type abstractStructFieldSet struct {
 }
 type abstractStructField struct {
 	key   string
-	value interface{}
+	value reflect.Value
+	tp    reflect.StructField
 }
 
 type StorageType int
@@ -96,7 +97,8 @@ func getAsAbstractStructFieldSetFromInterface(inf interface{}) abstractStructFie
 	for k, field := range fields {
 		f := abstractStructField{
 			key:   field.Name,
-			value: getDirectStructFromInterface(inf).Field(k).String(),
+			value: getDirectStructFromInterface(inf).Field(k),
+			tp:    getDirectTypeFromInterface(inf).Field(k),
 		}
 		afs.fields = append(afs.fields, f)
 	}
