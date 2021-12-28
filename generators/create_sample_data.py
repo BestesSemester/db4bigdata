@@ -190,25 +190,31 @@ for level in agent_hierarchy_n:
             if rolecount <= level:
                 l = rolecount - 1
                 print("NOTICE: moving lower level persons to last available level - please define other levels in input/roles.json if you wish to expand levels.")
+
             lst_agents.append(df_agents.iloc[pos].to_dict())
-            lst_agent_ids.append(df_agents.iloc[pos].PersonID)
-            person = df_persons.iloc[lst_agents[-1]["PersonID"]]
+            person = df_persons.iloc[lst_agents[-1]["PersonID"]-1]
             person.Role = get_role_dict_by_id(l).to_dict()
             person.RoleID = person.Role["RoleID"]
-            df_persons.at[lst_agents[-1]["PersonID"]] = person
-            if l != 1:
-                lst_supervisor_ids.append(int(lst_supervisors[pos]["PersonID"]))
+            df_persons.at[lst_agents[-1]["PersonID"]-1] = person
+            df_agents.iloc[pos] = person
+            lst_agent_ids.append(df_agents.iloc[pos].PersonID)
+            lst_agents[len(lst_agents) -1] = df_agents.iloc[pos].to_dict()
             pos += 1
             if level < list(agent_hierarchy_n.keys())[-1] :
-                lst_supervisors.extend( [lst_agents[-1]]  * agent_hierarchy_n[level+1][j + supervisor_offset]  )
+                lst_supervisors.extend( [lst_agents[-1]] * agent_hierarchy_n[level+1][j + supervisor_offset]  )
         supervisor_offset = supervisor_offset + agent_nr
 modification_date = datetime.datetime(2021, 1, 1).isoformat() + "Z"
-df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'AgentID': lst_agent_ids, 'SupervisorID': lst_supervisor_ids, 'Supervisor': lst_supervisors, 
+df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'AgentID': lst_agent_ids, 'Supervisor': lst_supervisors, 
                              'ModificationDate': modification_date, 'AgentStatus': 1})
 df_hierarchy.loc[ df_hierarchy["Supervisor"]== -1 , "Supervisor"] = None
-df_hierarchy.loc[ df_hierarchy["SupervisorID"]== -1 , "SupervisorID"] = None
-df_hierarchy.SupervisorID = df_hierarchy.SupervisorID.astype(pd.Int64Dtype())
 
+def getSupervisorID(supervisor):
+    if supervisor is not None:
+        return supervisor["PersonID"]
+    else:
+        return None
+df_hierarchy["SupervisorID"] = [getSupervisorID(supervisor) for supervisor in df_hierarchy["Supervisor"]]
+df_hierarchy["SupervisorID"] = df_hierarchy["SupervisorID"].astype(pd.Int64Dtype())
 
 
 #%% create invoices
