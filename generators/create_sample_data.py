@@ -235,9 +235,8 @@ df_invoices['InvoiceDate'] = df_invoices['InvoiceDate'].apply(lambda day: dateti
 df_invoices['OpenSum'] = 0
 df_invoices['Customer'] = list(df_persons[df_persons.RoleID==1].sample(n_invoices, replace = True).to_dict('records'))
 df_invoices['Agent'] =  list(df_persons[df_persons.RoleID!=1].sample(n_invoices, replace = True).to_dict('records'))
-df_invoices['AgentID'] = df_persons['PersonID']
+df_invoices['AgentID'] = [person["PersonID"] for person in df_invoices.Agent]
 df_invoices['InvoiceID'] = df_invoices.index + 1
-
 
 
 def all_but(*names, df):
