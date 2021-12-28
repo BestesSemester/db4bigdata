@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 type Person struct {
@@ -20,12 +18,12 @@ type Person struct {
 	BirthDate        time.Time `gogm:"name=birth_date"`
 	RegistrationDate time.Time `gogm:"name=registration_date"`
 	RoleID           int
-	Role             *Role      `gogm:"direction=outgoing;relationship=hasRole"`
+	Role             *Role      `gorm:"constraint:OnUpdate:CASCADE;OnDelete:SET NULL;" gogm:"direction=outgoing;relationship=hasRole"`
 	SupervisorID     *int       `gogm:"-"`
-	Supervisor       *Person    `bson:"-" gogm:"direction=outgoing;relationship=supervised"`
-	AgentInvoices    []*Invoice `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=sold"`
-	CustomerInvoices []*Invoice `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=bought"`
-	Employees        []*Person  `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=supervised"`
+	Supervisor       *Person    `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=supervised_by"`
+	AgentInvoices    []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=sold"`
+	CustomerInvoices []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=bought"`
+	Employees        []*Person  `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=supervised_by"`
 }
 
 func InterconnectPersonRoles(pe *[]Person) {
@@ -38,23 +36,23 @@ func InterconnectPersonRoles(pe *[]Person) {
 		} else {
 			people[i].Role = roles[roleid]
 		}
-		people[i].Role.People = append(people[i].Role.People, &people[i])
+		role := roles[roleid]
+		role.People = append(role.People, &people[i])
 	}
 	pe = &people
 }
 
 func MatchPeopleAndInvoices(people []Person, in []Invoice) ([]Person, []Invoice) {
-	p := make(map[int]Person)
-	for _, per := range people {
-		p[per.PersonID] = per
+	p := make(map[int]*Person)
+	for k := range people {
+		p[people[k].PersonID] = &people[k]
 	}
-	logrus.Println(p)
 	for i, invoice := range in {
 		save_invoice := invoice
 		agent := p[invoice.Agent.PersonID]
 		customer := p[invoice.Customer.PersonID]
-		in[i].Agent = &agent
-		in[i].Customer = &customer
+		in[i].Agent = agent
+		in[i].Customer = customer
 		customer.CustomerInvoices = append(p[invoice.Customer.PersonID].CustomerInvoices, &save_invoice)
 		p[invoice.Customer.PersonID] = customer
 		agent.AgentInvoices = append(p[invoice.Agent.PersonID].AgentInvoices, &save_invoice)
@@ -62,7 +60,32 @@ func MatchPeopleAndInvoices(people []Person, in []Invoice) ([]Person, []Invoice)
 	}
 	outPeople := []Person{}
 	for k := range p {
-		outPeople = append(outPeople, p[k])
+		outPeople = append(outPeople, *p[k])
 	}
 	return outPeople, in
+}
+
+func MatchHirarchy(people []Person, hierarchy []Hierarchy) []Person {
+	p := make(map[int]*Person)
+	for k := range people {
+		p[people[k].PersonID] = &people[k]
+	}
+	for _, hi := range hierarchy {
+		agentID := hi.Agent.PersonID
+
+		if hi.Supervisor != nil {
+			supervisor := p[hi.Supervisor.PersonID]
+			agent := p[agentID]
+			agent.Supervisor = supervisor
+			supervisor.Employees = append(supervisor.Employees, agent)
+		}
+		// if agentID == 1078 {
+		// 	logrus.Println(p[agentID])
+		// }
+	}
+	outPeople := []Person{}
+	for k := range p {
+		outPeople = append(outPeople, *p[k])
+	}
+	return outPeople
 }

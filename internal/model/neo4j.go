@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"reflect"
@@ -13,7 +14,6 @@ import (
 
 type Neo4jBaseNode struct {
 	Id *int64 `json:"-" gogm:"pk=default" gorm:"-" bson:"-"`
-
 	// LoadMap represents the state of how a node was loaded for neo4j.
 	// This is used to determine if relationships are removed on save
 	// field -- relations
@@ -71,18 +71,20 @@ func (neo4j *Neo4j) Save(obj interface{}) error {
 	logrus.Println(reflect.TypeOf(obj).Kind())
 	t := getDirectTypeFromInterface(obj)
 	switch t.Kind() {
-	case reflect.Array | reflect.Slice:
+	case reflect.Slice | reflect.Array:
 		logrus.Println("found iterable")
 		objs := getInterfacePointerSliceFromInterface(obj)
-		for _, o := range objs {
-			err := neo4j.session.SaveDepth(context.Background(), o, 2)
+		for i, o := range objs {
+			logrus.Printf("Saving object no. %d", i)
+			err := neo4j.session.Save(context.Background(), o)
 			if err != nil {
 				logrus.Errorln(err)
 				return err
 			}
 		}
 	case reflect.Struct:
-		if err := neo4j.session.SaveDepth(context.Background(), obj, 2); err != nil {
+		if err := neo4j.session.Save(context.Background(), obj); err != nil {
+			logrus.Errorln(err)
 			return err
 		}
 	default:
@@ -96,16 +98,22 @@ func (neo4j *Neo4j) Delete(obj interface{}) error {
 	return nil
 }
 
-// Returns sql-Result
+// Returns Neo4j-Result
 func (neo4j *Neo4j) Find(qry interface{}, target interface{}) error {
-	// mssql.conn.Exec(qry)
+	conditions, _ := json.Marshal(qry)
+	query := `
+MATCH p=(m:Person $conditions)
+RETURN p
+`
+	logrus.Println(query)
+	neo4j.session.Query(context.Background(), query, map[string]interface{}{"conditions": conditions}, target)
 	t := reflect.TypeOf(target)
 	logrus.Println(t)
 	logrus.Println(getAsAbstractStructFieldSetFromInterface(target))
-	// logrus.Println(f.Tag.Get("mssql"))
 	return nil
 }
 
+//Migrate - does nothing
 func (neo4j *Neo4j) Migrate(inf ...interface{}) error {
 	return fmt.Errorf("no implementation")
 }
