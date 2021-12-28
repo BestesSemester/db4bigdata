@@ -45,12 +45,12 @@ func main() {
 	// mongo.Find(bson.D{{"agent.personid", bson.D{{"$in", downline_ids}}}}, &all_invoices)
 	mongo.Find(bson.D{
 		{"invoicedate", bson.D{{"$gte", startDate}, {"$lt", endDate}}},
-		{"agent.personid", bson.D{{"$in", downline_ids}}},
+		{"agentid", bson.D{{"$in", downline_ids}}},
 	}, &all_invoices)
 
 	for _, invoice := range all_invoices {
 		invoice_sum = invoice_sum + invoice.NetSum
-		var invoice_agentID = invoice.Agent.PersonID
+		var invoice_agentID = invoice.AgentID
 		var invoice_provision = invoice.NetSum * 0.1
 
 		// If we don´t know supervisors, request them from db
@@ -58,6 +58,7 @@ func main() {
 			supervisors_map[uint(invoice_agentID)] = findAllSupervisorsByAgentPersonId(mongo, invoice_agentID)
 		}
 		var supervisorIds = supervisors_map[uint(invoice_agentID)]
+		// logrus.Debug("Supervisors for agent: ", invoice_agentID, " < ", supervisorIds, " > ")
 
 		if len(supervisorIds) > 0 { // Agent has supervisors
 			// 70% of provison for the agent
@@ -109,7 +110,7 @@ func findAllSupervisorsByAgentPersonId(mongo model.Database, personID int) []int
 
 func findSupervisorIDByAgentPersonId(mongo model.Database, personID int) (int, error) {
 	var agent_hierarchy []model.Hierarchy
-	var agent_hierarchy_qry = bson.D{{"agent.personid", personID}}
+	var agent_hierarchy_qry = bson.D{{"agentid", personID}}
 
 	mongo.Find(agent_hierarchy_qry, &agent_hierarchy)
 	if len(agent_hierarchy) < 1 {
@@ -117,10 +118,10 @@ func findSupervisorIDByAgentPersonId(mongo model.Database, personID int) (int, e
 	} else if len(agent_hierarchy) > 1 {
 		return 0, errors.New("Invalid data structure: More than 1 hierarchy object found.")
 	} else {
-		if agent_hierarchy[0].Supervisor == nil {
+		if agent_hierarchy[0].SupervisorID == nil {
 			return -1, nil
 		} else {
-			return agent_hierarchy[0].Supervisor.PersonID, nil
+			return *agent_hierarchy[0].SupervisorID, nil
 		}
 	}
 }
@@ -146,13 +147,13 @@ func findAllDownlineAgents(mongo model.Database, personID int) []int {
 
 func findAgentsBySupervisorId(mongo model.Database, personID int) ([]int, error) {
 	var agent_hierarchy []model.Hierarchy
-	var agent_hierarchy_qry = bson.D{{"supervisor.personid", personID}}
+	var agent_hierarchy_qry = bson.D{{"supervisorid", personID}}
 
 	mongo.Find(agent_hierarchy_qry, &agent_hierarchy)
 
 	ret := make([]int, len(agent_hierarchy))
 	for i, agent := range agent_hierarchy {
-		ret[i] = agent.Agent.PersonID
+		ret[i] = agent.AgentID
 	}
 	return ret, nil
 }

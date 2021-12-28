@@ -46,14 +46,14 @@ func main() {
 	}, &all_invoices)
 
 	for _, invoice := range all_invoices {
-		var invoice_agentID = invoice.Agent.PersonID
+		var invoice_agentID = invoice.AgentID
 		var invoice_provision = invoice.NetSum * 0.1
 
 		if _, found := supervisors_map[uint(invoice_agentID)]; !found {
 			supervisors_map[uint(invoice_agentID)] = findAllSupervisorsByAgentPersonId(mongo, invoice_agentID)
 		}
 		var supervisorIds = supervisors_map[uint(invoice_agentID)]
-		// logrus.Debug("Supervisors for agent: ", agent.PersonID, " < ", supervisorIds, " > ")
+		// logrus.Debug("Supervisors for agent: ", invoice_agentID, " < ", supervisorIds, " > ")
 
 		if len(supervisorIds) > 0 { // Agent has supervisors
 			// 70% of provison for the agent
@@ -105,7 +105,7 @@ func findAllSupervisorsByAgentPersonId(mongo model.Database, personID int) []int
 
 func findSupervisorIDByAgentPersonId(mongo model.Database, personID int) (int, error) {
 	var agent_hierarchy []model.Hierarchy
-	var agent_hierarchy_qry = bson.D{{"agent.personid", personID}}
+	var agent_hierarchy_qry = bson.D{{"agentid", personID}}
 
 	mongo.Find(agent_hierarchy_qry, &agent_hierarchy)
 	if len(agent_hierarchy) < 1 {
@@ -113,10 +113,10 @@ func findSupervisorIDByAgentPersonId(mongo model.Database, personID int) (int, e
 	} else if len(agent_hierarchy) > 1 {
 		return 0, errors.New("Invalid data structure: More than 1 hierarchy object found.")
 	} else {
-		if agent_hierarchy[0].Supervisor == nil {
+		if agent_hierarchy[0].SupervisorID == nil {
 			return -1, nil
 		} else {
-			return agent_hierarchy[0].Supervisor.PersonID, nil
+			return *agent_hierarchy[0].SupervisorID, nil
 		}
 	}
 }
