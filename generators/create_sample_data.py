@@ -261,5 +261,6 @@ with open(r'./output_data/hierarchy.json', 'w') as f:
     f.write(out_json)  
     
 out_json = df_invoices.to_json(orient='records')
+out_json = out_json.replace('{"NetSum"', '\n{"NetSum"')
 with open(r'./output_data/invoices.json', 'w') as f:
     f.write(out_json)
