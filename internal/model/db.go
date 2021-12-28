@@ -6,7 +6,6 @@ import (
 	"reflect"
 
 	"github.com/joho/godotenv"
-	"github.com/sirupsen/logrus"
 )
 
 type Database interface {
@@ -110,7 +109,7 @@ func getDirectTypeFromInterface(inf interface{}) reflect.Type {
 	var tp reflect.Type
 	t := reflect.TypeOf(inf)
 	if t.Kind() == reflect.Ptr {
-		logrus.Println("converting")
+		// logrus.Println("converting")
 		tp = t.Elem()
 	} else {
 		tp = t
