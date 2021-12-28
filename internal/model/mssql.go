@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type MsSQLConfig struct {
@@ -59,7 +60,7 @@ func (mssql *MsSQL) Save(obj interface{}) error {
 			return err
 		}
 	case reflect.Struct:
-		mssql.db.Save(obj)
+		mssql.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(obj)
 	default:
 		return fmt.Errorf("unsupported data type: %s", t.Kind())
 	}
@@ -71,7 +72,7 @@ func (mssql *MsSQL) saveIterable(obj interface{}) error {
 	objs := getInterfacePointerSliceFromInterface(obj)
 	for _, o := range objs {
 		// save
-		mssql.db.FirstOrCreate(o)
+		mssql.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(o)
 	}
 	return nil
 }

@@ -6,7 +6,7 @@ import (
 
 type Invoice struct {
 	Neo4jBaseNode `bson:"-"`
-	InvoiceID     int       `gogm:"name=invoice_id"`
+	InvoiceID     int       `gorm:"primaryKey" gogm:"name=invoice_id"`
 	InvoiceDate   time.Time `gogm:"name=invoice_date"`
 	CustomerID    int
 	Customer      *Person `gogm:"direction=incoming;relationship=bought"`
