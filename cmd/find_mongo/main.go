@@ -35,7 +35,7 @@ func main() {
 	provision_map := make(map[uint]float32)
 	supervisors_map := make(map[uint][]int)
 
-	logrus.Info("Start to calculate provision for all agents")
+	logrus.Info("Start to calculate provision for agent ", agentId)
 
 	// pm := performancemeasurement.New(model.MongoDB, "horrorlog")
 	// pm.Start("test", 1*time.Second)
