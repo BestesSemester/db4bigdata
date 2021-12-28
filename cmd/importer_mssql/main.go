@@ -28,9 +28,9 @@ func main() {
 
 	hierarchies := []model.Hierarchy{}
 	importer.ImportHierarchyFromJSON("./generators/output_data/hierarchy.json", &hierarchies)
-	people = model.MatchHirarchy(people, hierarchies)
-	mssql.Save(&people)
+	// people = model.MatchHirarchy(people, hierarchies)
 	mssql.Save(&invoices)
 	mssql.Save(&hierarchies)
+	mssql.Save(&people)
 
 }

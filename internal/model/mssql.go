@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"reflect"
 
+	pb "github.com/cheggaaa/pb/v3"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
@@ -70,10 +71,13 @@ func (mssql *MsSQL) Save(obj interface{}) error {
 func (mssql *MsSQL) saveIterable(obj interface{}) error {
 	// iterate over the slice (has to be abstracted, because we are working type-agnostic)
 	objs := getInterfacePointerSliceFromInterface(obj)
+	bar := pb.StartNew(len(objs))
 	for _, o := range objs {
 		// save
 		mssql.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(o)
+		bar.Increment()
 	}
+	bar.Finish()
 	return nil
 }
 
