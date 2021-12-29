@@ -180,6 +180,7 @@ lst_agents = []
 lst_agent_ids = []
 lst_supervisor_ids = []
 df_persons["SupervisorID"] = [None] * len(df_persons.index)
+df_persons["Supervisor"] = [None] * len(df_persons.index)
 for level in agent_hierarchy_n:
     l = level
     supervisor_offset = 0
@@ -198,6 +199,7 @@ for level in agent_hierarchy_n:
             person.RoleID = person.Role["RoleID"]
             if level < list(agent_hierarchy_n.keys())[-1] and level != 1 :
                 person.SupervisorID = lst_agents[pos-1]["PersonID"]
+                person.Supervisor = lst_agents[pos-1]
             df_persons.at[lst_agents[-1]["PersonID"]-1] = person
             df_agents.iloc[pos] = person
             lst_agent_ids.append(df_agents.iloc[pos].PersonID)
