@@ -20,7 +20,6 @@ func main() {
 	// AgentID, StartPayDate, EndPayDate
 	util.SetupLogs()
 	argsWithoutProg := os.Args[1:]
-	// logrus.Debug(argsWithoutProg)
 
 	agentId, _ := strconv.Atoi(argsWithoutProg[0])
 	startDate, _ := time.Parse("2006-01-02", argsWithoutProg[1])
@@ -41,14 +40,18 @@ func main() {
 	// pm.Start("test", 1*time.Second)
 	startTime := time.Now()
 
+	downline_ids := findAllDownlineAgents(mongo, agentId)
+	// mongo.Find(bson.D{{"agent.personid", bson.D{{"$in", downline_ids}}}}, &all_invoices)
 	mongo.Find(bson.D{
 		{"invoicedate", bson.D{{"$gte", startDate}, {"$lt", endDate}}},
+		{"agentid", bson.D{{"$in", downline_ids}}},
 	}, &all_invoices)
 
 	for _, invoice := range all_invoices {
 		var invoice_agentID = invoice.AgentID
 		var invoice_provision = invoice.NetSum * 0.1
 
+		// If we don´t know supervisors, request them from db
 		if _, found := supervisors_map[uint(invoice_agentID)]; !found {
 			supervisors_map[uint(invoice_agentID)] = findAllSupervisorsByAgentPersonId(mongo, invoice_agentID)
 		}
@@ -66,7 +69,7 @@ func main() {
 				addProvisionToProvisionMap(provision_map, supervisorID, provision_for_others)
 			}
 		} else {
-			// No supervisor whole provision for the agent
+			// No supervisor = whole provision for the agent
 			addProvisionToProvisionMap(provision_map, invoice_agentID, invoice_provision)
 		}
 	}
@@ -119,4 +122,36 @@ func findSupervisorIDByAgentPersonId(mongo model.Database, personID int) (int, e
 			return *agent_hierarchy[0].SupervisorID, nil
 		}
 	}
+}
+
+// !!!! Attention - Recursive function !!!!
+func findAllDownlineAgents(mongo model.Database, personID int) []int {
+	ret := []int{personID}
+	var agentIds, err = findAgentsBySupervisorId(mongo, personID)
+	if err != nil {
+		logrus.Error(err)
+		return ret
+	}
+
+	if len(agentIds) == 0 {
+		return ret
+	} else {
+		for _, agentId := range agentIds {
+			ret = append(findAllDownlineAgents(mongo, agentId), ret...)
+		}
+		return ret
+	}
+}
+
+func findAgentsBySupervisorId(mongo model.Database, personID int) ([]int, error) {
+	var agent_hierarchy []model.Hierarchy
+	var agent_hierarchy_qry = bson.D{{"supervisorid", personID}}
+
+	mongo.Find(agent_hierarchy_qry, &agent_hierarchy)
+
+	ret := make([]int, len(agent_hierarchy))
+	for i, agent := range agent_hierarchy {
+		ret[i] = agent.AgentID
+	}
+	return ret, nil
 }
