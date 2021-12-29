@@ -23,11 +23,17 @@ services:
       - "mongo"
 
   neo4j:
-    image: neo4j:3.5.3
+    image: neo4j:4.0
     volumes:
       - neo4j:/data
+      - plugins:/plugins
     environment:
       - NEO4J_dbms_transaction_timeout=300
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4JLABS_PLUGINS=["apoc"]
+      - NEO4J_AUTH=neo4j/changeme
     ports:
       - 7474:7474
       - 7687:7687
@@ -44,3 +50,4 @@ services:
 
 volumes:
   neo4j:
+  plugins:
