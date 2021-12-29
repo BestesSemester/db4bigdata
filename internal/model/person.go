@@ -6,7 +6,7 @@ import (
 
 type Person struct {
 	Neo4jBaseNode    `bson:"-"`
-	PersonID         int       `gorm:"primaryKey" gogm:"name=person_id"`
+	PersonID         *int64    `gorm:"primaryKey" gogm:"name=person_id"`
 	Name             string    `gogm:"name=name"`
 	FirstName        string    `gogm:"name=first_name"`
 	Street           string    `gogm:"name=street"`
@@ -19,7 +19,7 @@ type Person struct {
 	RegistrationDate time.Time `gogm:"name=registration_date"`
 	RoleID           int
 	Role             *Role      `gogm:"direction=outgoing;relationship=hasRole"`
-	SupervisorID     *int       `gogm:"-" bson:"-"`
+	SupervisorID     *int64     `gogm:"-" bson:"-"`
 	Supervisor       *Person    `gogm:"direction=outgoing;relationship=supervised_by" bson:"-"`
 	AgentInvoices    []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=sold"`
 	CustomerInvoices []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=bought"`
@@ -27,36 +27,36 @@ type Person struct {
 }
 
 func InterconnectPersonRoles(pe *[]Person) {
-	roles := make(map[int]*Role)
+	roles := make(map[int64]*Role)
 	people := *pe
 	for i := range people {
 		roleid := people[i].Role.RoleID
-		if roles[roleid] == nil {
-			roles[roleid] = people[i].Role
+		if roles[*roleid] == nil {
+			roles[*roleid] = people[i].Role
 		} else {
-			people[i].Role = roles[roleid]
+			people[i].Role = roles[*roleid]
 		}
-		role := roles[roleid]
+		role := roles[*roleid]
 		role.People = append(role.People, &people[i])
 	}
 	pe = &people
 }
 
 func MatchPeopleAndInvoices(people []Person, in []Invoice) ([]Person, []Invoice) {
-	p := make(map[int]*Person)
+	p := make(map[int64]*Person)
 	for k := range people {
-		p[people[k].PersonID] = &people[k]
+		p[*people[k].PersonID] = &people[k]
 	}
 	for i, invoice := range in {
 		save_invoice := invoice
-		agent := p[invoice.Agent.PersonID]
-		customer := p[invoice.Customer.PersonID]
+		agent := p[*invoice.Agent.PersonID]
+		customer := p[*invoice.Customer.PersonID]
 		in[i].Agent = agent
 		in[i].Customer = customer
-		customer.CustomerInvoices = append(p[invoice.Customer.PersonID].CustomerInvoices, &save_invoice)
-		p[invoice.Customer.PersonID] = customer
-		agent.AgentInvoices = append(p[invoice.Agent.PersonID].AgentInvoices, &save_invoice)
-		p[invoice.Agent.PersonID] = agent
+		customer.CustomerInvoices = append(p[*invoice.Customer.PersonID].CustomerInvoices, &save_invoice)
+		p[*invoice.Customer.PersonID] = customer
+		agent.AgentInvoices = append(p[*invoice.Agent.PersonID].AgentInvoices, &save_invoice)
+		p[*invoice.Agent.PersonID] = agent
 	}
 	outPeople := []Person{}
 	for k := range p {
@@ -66,18 +66,18 @@ func MatchPeopleAndInvoices(people []Person, in []Invoice) ([]Person, []Invoice)
 }
 
 func MatchHirarchy(people []Person, hierarchy []Hierarchy) []Person {
-	p := make(map[int]*Person)
+	p := make(map[int64]*Person)
 	for k := range people {
-		p[people[k].PersonID] = &people[k]
+		p[*people[k].PersonID] = &people[k]
 	}
 	for _, hi := range hierarchy {
 		agentID := hi.Agent.PersonID
 
 		if hi.Supervisor != nil {
-			supervisor := p[hi.Supervisor.PersonID]
-			agent := p[agentID]
+			supervisor := p[*hi.Supervisor.PersonID]
+			agent := p[*agentID]
 			agent.Supervisor = supervisor
-			agent.SupervisorID = &supervisor.PersonID
+			agent.SupervisorID = supervisor.PersonID
 			supervisor.Employees = append(supervisor.Employees, agent)
 		}
 		// if agentID == 1078 {

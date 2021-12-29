@@ -33,7 +33,7 @@ func main() {
 
 	importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json", &invoices)
 	ipeople, invoices := model.MatchPeopleAndInvoices(hpeople, invoices)
-	//neo4j.Save(&invoices)
+	neo4j.Save(&invoices)
 	if err := neo4j.Save(&ipeople); err != nil {
 		logrus.Errorln(err)
 	}

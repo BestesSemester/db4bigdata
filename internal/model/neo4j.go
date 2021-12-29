@@ -76,6 +76,7 @@ func (neo4j *Neo4j) Save(obj interface{}) error {
 		objs := getInterfacePointerSliceFromInterface(obj)
 		for i, o := range objs {
 			logrus.Printf("Saving object no. %d", i)
+			logrus.Println(o)
 			err := neo4j.session.Save(context.Background(), o)
 			if err != nil {
 				logrus.Errorln(err)
