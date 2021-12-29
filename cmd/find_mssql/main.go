@@ -23,10 +23,10 @@ func main() {
 
 	person := model.Person{PersonID: 54376}
 
-	if err := mssql.Find(&invoice, &invoice); err != nil {
+	if err := mssql.Find(&person, &person); err != nil {
 		logrus.Errorln(err)
 	}
-	ji, err := json.MarshalIndent(&invoice, "", "	")
+	ji, err := json.MarshalIndent(&person, "", "	")
 	if err != nil {
 		logrus.Errorln(err)
 	}
