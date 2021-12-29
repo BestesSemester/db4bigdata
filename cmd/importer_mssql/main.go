@@ -1,6 +1,7 @@
 package main
 
 import (
+	"git.sys-tem.org/caos/db4bigdata/internal/db"
 	"git.sys-tem.org/caos/db4bigdata/internal/importer"
 	"git.sys-tem.org/caos/db4bigdata/internal/model"
 	"git.sys-tem.org/caos/db4bigdata/internal/util"
@@ -12,7 +13,7 @@ import (
 func main() {
 	util.SetupLogs()
 	logrus.Println("hello")
-	mssql, err := model.ConnectStorage(model.MSQL)
+	mssql, err := db.ConnectStorage(db.MSQL)
 	if err != nil {
 		logrus.Fatalln(err)
 	}
@@ -20,16 +21,22 @@ func main() {
 	// Call importer
 	// **** Following lines just works in debug mode ****
 
-	mssql.Migrate(&model.Person{}, &model.Role{}, &model.Hierarchy{}, &model.Invoice{}, &model.Provision{})
-	invoices := []model.Invoice{}
-	importer.ImportInvoiceFromJSON("./generators/output_data/invoices.json", &invoices)
-
+	invoices := []*model.Invoice{}
 	people := []*model.Person{}
-	importer.ImportInterfaceFromJSON("./generators/output_data/persons.json", &people)
 	hierarchy := []*model.Hierarchy{}
-	importer.ImportInterfaceFromJSON("./generators/output_data/persons.json", &hierarchy)
-	model.MatchHirarchy(&people, &hierarchy)
-	mssql.Save(&invoices)
-	mssql.Save(&hierarchy)
+
+	mssql.Migrate(&model.Person{}, &model.Role{}, &model.Hierarchy{}, &model.Invoice{}, &model.Provision{}, &model.ProvisionDistribution{})
+
+	importer.ImportInterfaceFromJSON("./generators/output_data/invoices.json", &invoices)
+	importer.ImportInterfaceFromJSON("./generators/output_data/persons.json", &people)
+	importer.ImportInterfaceFromJSON("./generators/output_data/hierarchy.json", &hierarchy)
+
 	mssql.Save(&people)
+
+	model.InterconnectPersonRoles(&people)
+	model.MatchHirarchy(&people, &hierarchy)
+	model.MatchPeopleAndInvoices(&people, &invoices)
+
+	mssql.Save(&invoices)
+	// mssql.Save(&hierarchy)
 }

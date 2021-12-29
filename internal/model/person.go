@@ -41,10 +41,6 @@ func InterconnectPersonRoles(people *[]*Person) {
 }
 
 func MatchPeopleAndInvoices(people *[]*Person, invoices *[]*Invoice) {
-	p := make(map[int]*Person)
-	for k := range *people {
-		p[(*people)[k].PersonID] = (*people)[k]
-	}
 	for _, invoice := range *invoices {
 
 		for _, person := range *people {
@@ -62,11 +58,6 @@ func MatchPeopleAndInvoices(people *[]*Person, invoices *[]*Invoice) {
 }
 
 func MatchHirarchy(people *[]*Person, hierarchy *[]*Hierarchy) {
-	p := make(map[int]*Person)
-	for k, per := range *people {
-		pe := *people
-		p[pe[k].PersonID] = per
-	}
 	for _, set := range *hierarchy {
 		if set.Supervisor != nil {
 			for _, ag := range *people {

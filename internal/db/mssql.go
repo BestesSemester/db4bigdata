@@ -1,4 +1,4 @@
-package model
+package db
 
 import (
 	"fmt"
@@ -137,13 +137,13 @@ func (mssql *MsSQL) resolveStructFields(structure abstractStructField, parentnam
 	}
 	for i := 0; i < parentType.NumField(); i++ {
 		child := parentType.Field(i)
-		if child.Type.Kind() == reflect.Ptr && child.Tag.Get("gorm") != "-" {
+		if child.Type.Kind() == reflect.Ptr && (child.Type.Elem().Kind() == reflect.Struct || child.Type.Elem().Kind() == reflect.Slice || child.Type.Elem().Kind() == reflect.Array) && child.Tag.Get("gorm") != "-" {
 			logrus.Println(child)
 			preloadlist = append(preloadlist, parentname+"."+child.Name)
 			field := abstractStructField{
 				tp: child,
 			}
-			fieldnames := mssql.resolveStructFields(field, parentname+"."+child.Name, 6)
+			fieldnames := mssql.resolveStructFields(field, parentname+"."+child.Name, 10)
 			// logrus.Println(fieldnames)
 			if fieldnames != nil {
 				preloadlist = append(preloadlist, fieldnames...)

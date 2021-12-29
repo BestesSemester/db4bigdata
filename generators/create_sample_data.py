@@ -18,8 +18,8 @@ from tqdm import tqdm
 some_seed = 42
 np.random.seed(some_seed)
 n_adresses = 100000
-n_persons  = 10000
-n_invoices = 1000
+n_persons  = 100000
+n_invoices = 10000
 min_net_sum = 20
 
 # create hierachy with dictionary   a: (b,c)  a is level, (repeated) sampling of integer n:  b <= n <= c as number of agents in that level
