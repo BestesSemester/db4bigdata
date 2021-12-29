@@ -31,6 +31,7 @@ require (
 	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/kamva/mgm/v3 v3.4.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/mackerelio/go-osstat v0.2.1 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/mattn/go-runewidth v0.0.12 // indirect

@@ -3,10 +3,10 @@ package performancemeasurement
 import (
 	"fmt"
 	"os"
-	"runtime"
 	"time"
 
 	"git.sys-tem.org/caos/db4bigdata/internal/model"
+	"github.com/mackerelio/go-osstat/memory"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/sirupsen/logrus"
 )
@@ -94,6 +94,8 @@ func (p *PerformanceMeasurement) ReadMeasureTime() {
 		p.writeToFile(prtstr)
 	}
 }
+
+// ReadMeasureRAM - Measures how much RAM the system uses.
 func (p *PerformanceMeasurement) ReadMeasureRAM(operation string, interval time.Duration) {
 	for {
 		select {
@@ -101,9 +103,12 @@ func (p *PerformanceMeasurement) ReadMeasureRAM(operation string, interval time.
 			return
 		default:
 		}
-		var m runtime.MemStats
-		runtime.ReadMemStats(&m)
-		prtstr := fmt.Sprintf("RAM: Alloc = %v MiB for %s.", m.Alloc/1024/1024, operation)
+		memory, err := memory.Get()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			return
+		}
+		prtstr := fmt.Sprintf("RAM: Alloc = %v bytes for %s.", memory.Used, operation)
 		p.writeToFile(prtstr)
 		logrus.Println(prtstr)
 		time.Sleep(interval)
