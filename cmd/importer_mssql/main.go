@@ -38,5 +38,5 @@ func main() {
 	model.MatchPeopleAndInvoices(&people, &invoices)
 
 	mssql.Save(&invoices)
-	// mssql.Save(&hierarchy)
+	mssql.Save(&hierarchy)
 }
