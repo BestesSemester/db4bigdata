@@ -19,7 +19,7 @@ type Person struct {
 	RegistrationDate time.Time `gogm:"name=registration_date"`
 	RoleID           int
 	Role             *Role      `gogm:"direction=outgoing;relationship=hasRole"`
-	SupervisorID     int        `gogm:"-" bson:"-"`
+	SupervisorID     *int       `gogm:"-" bson:"-"`
 	Supervisor       *Person    `gogm:"direction=outgoing;relationship=supervised_by" bson:"-"`
 	AgentInvoices    []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=sold"`
 	CustomerInvoices []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=bought"`
@@ -75,7 +75,7 @@ func MatchHirarchy(people *[]*Person, hierarchy *[]*Hierarchy) {
 						if sup.PersonID == set.Supervisor.PersonID {
 							sup.Employees = append(sup.Employees, ag)
 							ag.Supervisor = sup
-							ag.SupervisorID = sup.PersonID
+							ag.SupervisorID = &sup.PersonID
 						}
 					}
 				}
