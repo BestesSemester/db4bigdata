@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"git.sys-tem.org/caos/db4bigdata/internal/model"
+	"git.sys-tem.org/caos/db4bigdata/internal/performancemeasurement"
 	"git.sys-tem.org/caos/db4bigdata/internal/util"
 	"go.mongodb.org/mongo-driver/bson"
 
@@ -37,8 +38,8 @@ func main() {
 	provision_map := make(map[uint]float32)
 	supervisors_map := make(map[uint][]int)
 
-	// pm := performancemeasurement.New(model.MongoDB, "horrorlog")
-	// pm.Start("test", 1*time.Second)
+	pm := performancemeasurement.New(model.MongoDB, "find_mongo")
+	pm.Start("MongoDB calculate performance", 1*time.Second)
 
 	downline_ids := findAllDownlineAgents(mongo, agentId)
 	// mongo.Find(bson.D{{"agent.personid", bson.D{{"$in", downline_ids}}}}, &all_invoices)
@@ -73,8 +74,7 @@ func main() {
 			addProvisionToProvisionMap(provision_map, invoice_agentID, invoice_provision)
 		}
 	}
-	// pm.Stop()
-	// pm.Run()
+	pm.Stop()
 	elapsed := time.Since(startTime)
 
 	logrus.Info("Finished to calculate provision in ", elapsed)
