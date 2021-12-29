@@ -25,6 +25,9 @@ func main() {
 	startDate, _ := time.Parse("2006-01-02", argsWithoutProg[1])
 	endDate, _ := time.Parse("2006-01-02", argsWithoutProg[2])
 
+	logrus.Info("Start to calculate provision for agent ", agentId)
+	startTime := time.Now()
+
 	mongo, err := model.ConnectStorage(model.MongoDB)
 	if err != nil {
 		logrus.Fatal("Connect to MongoDB failed: ", err)
@@ -34,11 +37,8 @@ func main() {
 	provision_map := make(map[uint]float32)
 	supervisors_map := make(map[uint][]int)
 
-	logrus.Info("Start to calculate provision for agent ", agentId)
-
 	// pm := performancemeasurement.New(model.MongoDB, "horrorlog")
 	// pm.Start("test", 1*time.Second)
-	startTime := time.Now()
 
 	downline_ids := findAllDownlineAgents(mongo, agentId)
 	// mongo.Find(bson.D{{"agent.personid", bson.D{{"$in", downline_ids}}}}, &all_invoices)
