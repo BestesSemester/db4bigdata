@@ -177,29 +177,38 @@ df_agents = df_persons.sample(n_agents, replace = False)
 #
 pos = 0
 lst_agents = []
+lst_agent_ids = []
+lst_supervisor_ids = []
 for level in agent_hierarchy_n:
     l = level
     supervisor_offset = 0
     for agent_nr in agent_hierarchy_n[level]:
         if l == 1:
             lst_supervisors = [-1] * agent_nr
+            lst_supervisor_ids = [-1] * agent_nr
         for j in range(agent_nr):
             if rolecount <= level:
                 l = rolecount - 1
                 print("NOTICE: moving lower level persons to last available level - please define other levels in input/roles.json if you wish to expand levels.")
             lst_agents.append(df_agents.iloc[pos].to_dict())
+            lst_agent_ids.append(df_agents.iloc[pos].PersonID)
             person = df_persons.iloc[lst_agents[-1]["PersonID"]]
             person.Role = get_role_dict_by_id(l).to_dict()
             person.RoleID = person.Role["RoleID"]
             df_persons.at[lst_agents[-1]["PersonID"]] = person
+            if l != 1:
+                lst_supervisor_ids.append(int(lst_supervisors[pos]["PersonID"]))
             pos += 1
             if level < list(agent_hierarchy_n.keys())[-1] :
                 lst_supervisors.extend( [lst_agents[-1]]  * agent_hierarchy_n[level+1][j + supervisor_offset]  )
         supervisor_offset = supervisor_offset + agent_nr
 modification_date = datetime.datetime(2021, 1, 1).isoformat() + "Z"
-df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'Supervisor': lst_supervisors, 
+df_hierarchy = pd.DataFrame({'Agent': lst_agents, 'AgentID': lst_agent_ids, 'SupervisorID': lst_supervisor_ids, 'Supervisor': lst_supervisors, 
                              'ModificationDate': modification_date, 'AgentStatus': 1})
-df_hierarchy.loc[ df_hierarchy["Supervisor"]== -1 , "Supervisor"] = None 
+df_hierarchy.loc[ df_hierarchy["Supervisor"]== -1 , "Supervisor"] = None
+df_hierarchy.loc[ df_hierarchy["SupervisorID"]== -1 , "SupervisorID"] = None
+df_hierarchy.SupervisorID = df_hierarchy.SupervisorID.astype(pd.Int64Dtype())
+
 
 
 #%% create invoices
@@ -226,9 +235,8 @@ df_invoices['InvoiceDate'] = df_invoices['InvoiceDate'].apply(lambda day: dateti
 df_invoices['OpenSum'] = 0
 df_invoices['Customer'] = list(df_persons[df_persons.RoleID==1].sample(n_invoices, replace = True).to_dict('records'))
 df_invoices['Agent'] =  list(df_persons[df_persons.RoleID!=1].sample(n_invoices, replace = True).to_dict('records'))
-df_invoices['AgentID'] = df_persons['PersonID']
+df_invoices['AgentID'] = [person["PersonID"] for person in df_invoices.Agent]
 df_invoices['InvoiceID'] = df_invoices.index + 1
-
 
 
 def all_but(*names, df):
@@ -242,6 +250,7 @@ with open(r'./output_data/persons.json', 'w') as f:
     f.write(out_json)
     
 out_json = df_hierarchy.to_json(orient='records')
+# out_json = df_hierarchy.apply(lambda x: [x.dropna()], axis=1).to_json()
 with open(r'./output_data/hierarchy.json', 'w') as f:
     f.write(out_json)  
     
