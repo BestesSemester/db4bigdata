@@ -21,16 +21,33 @@ func main() {
 	// person := model.Person{PersonID: 23}
 	//p := model.Person{Name: "Meier"}
 
+	invoice := model.Invoice{InvoiceID: 848}
+
+	if err := mssql.Find(&invoice, &invoice); err != nil {
+		logrus.Errorln(err)
+	}
+	if err := getPeopleHierarchyForInvoice(mssql, &invoice); err != nil {
+		logrus.Errorln(err)
+	}
+	ji, err := json.MarshalIndent(&invoice, "", "	")
+	if err != nil {
+		logrus.Errorln(err)
+	}
+	logrus.Println(string(ji))
+
 	person := model.Person{PersonID: 54376}
 
 	if err := mssql.Find(&person, &person); err != nil {
 		logrus.Errorln(err)
 	}
-	ji, err := json.MarshalIndent(&person, "", "	")
+	if err := getPeopleHierarchyForInvoice(mssql, &invoice); err != nil {
+		logrus.Errorln(err)
+	}
+	jp, err := json.MarshalIndent(&person, "", "	")
 	if err != nil {
 		logrus.Errorln(err)
 	}
-	logrus.Println(string(ji))
+	logrus.Println(string(jp))
 
 	// if err := mssql.Find(&person, &person); err != nil {
 	// 	logrus.Errorln(err)
@@ -53,4 +70,23 @@ func main() {
 	// }
 	// logrus.Println(string(jh))
 
+}
+
+func getPeopleHierarchyForInvoice(mssql model.Database, invoice *model.Invoice) error {
+	if err := mssql.Find(invoice, invoice); err != nil {
+		logrus.Errorln(err)
+		return err
+	}
+	agent := &model.Person{PersonID: invoice.AgentID}
+	if err := mssql.Find(agent, agent); err != nil {
+		logrus.Errorln(err)
+		return err
+	}
+	invoice.Agent = agent
+	ji, err := json.MarshalIndent(agent, "", "	")
+	if err != nil {
+		logrus.Errorln(err)
+	}
+	logrus.Println(string(ji))
+	return nil
 }
