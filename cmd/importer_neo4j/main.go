@@ -40,7 +40,7 @@ func main() {
 		logrus.Println(err)
 	}
 	logrus.Println(string(str))
-	neo4j.Save(&invoices)
+	neo4j.Save(&people)
 	// if err := neo4j.Save(&hpeople); err != nil {
 	// 	logrus.Errorln(err)
 	// }
