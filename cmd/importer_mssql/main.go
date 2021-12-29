@@ -1,6 +1,7 @@
 package main
 
 import (
+	"git.sys-tem.org/caos/db4bigdata/internal/db"
 	"git.sys-tem.org/caos/db4bigdata/internal/importer"
 	"git.sys-tem.org/caos/db4bigdata/internal/model"
 	"git.sys-tem.org/caos/db4bigdata/internal/util"
@@ -12,7 +13,7 @@ import (
 func main() {
 	util.SetupLogs()
 	logrus.Println("hello")
-	mssql, err := model.ConnectStorage(model.MSQL)
+	mssql, err := db.ConnectStorage(db.MSQL)
 	if err != nil {
 		logrus.Fatalln(err)
 	}

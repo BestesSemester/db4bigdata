@@ -5,14 +5,14 @@ import (
 	"os"
 	"time"
 
-	"git.sys-tem.org/caos/db4bigdata/internal/model"
+	"git.sys-tem.org/caos/db4bigdata/internal/db"
 	"github.com/mackerelio/go-osstat/memory"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/sirupsen/logrus"
 )
 
 type PerformanceMeasurement struct {
-	DatabaseType            model.StorageType
+	DatabaseType            db.StorageType
 	LogFilePath             string
 	startMeasureCPUChannel  chan TimeMeasurementParameters
 	startMeasureRAMChannel  chan string
@@ -29,7 +29,7 @@ type TimeMeasurementParameters struct {
 	StopChannel chan bool
 }
 
-func New(databaseType model.StorageType, logFilePath string) PerformanceMeasurement {
+func New(databaseType db.StorageType, logFilePath string) PerformanceMeasurement {
 	// Creates a new instance of the perfomanceTaker.
 	p := PerformanceMeasurement{DatabaseType: databaseType, LogFilePath: logFilePath}
 	p.startMeasureTimeChannel = make(chan TimeMeasurementParameters)

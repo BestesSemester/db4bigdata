@@ -4,6 +4,7 @@ import (
 	// "git.sys-tem.org/caos/db4bigdata/internal/importer"
 	"time"
 
+	"git.sys-tem.org/caos/db4bigdata/internal/db"
 	"git.sys-tem.org/caos/db4bigdata/internal/importer"
 	"git.sys-tem.org/caos/db4bigdata/internal/model"
 	"git.sys-tem.org/caos/db4bigdata/internal/util"
@@ -17,7 +18,7 @@ func main() {
 
 	logrus.Info("Start to import data ")
 	startTime := time.Now()
-	mongo, err := model.ConnectStorage(model.MongoDB)
+	mongo, err := db.ConnectStorage(db.MongoDB)
 	if err != nil {
 		logrus.Fatal("Import to MongoDB failed: ", err)
 	}
