@@ -21,7 +21,7 @@ func main() {
 	// person := model.Person{PersonID: 23}
 	//p := model.Person{Name: "Meier"}
 
-	invoice := model.Invoice{InvoiceID: 126}
+	invoice := model.Invoice{InvoiceID: 848}
 
 	if err := mssql.Find(&invoice, &invoice); err != nil {
 		logrus.Errorln(err)

@@ -19,7 +19,7 @@ type Person struct {
 	RegistrationDate time.Time `gogm:"name=registration_date"`
 	RoleID           int
 	Role             *Role      `gogm:"direction=outgoing;relationship=hasRole"`
-	SupervisorID     int        `gogm:"-" bson:"-"`
+	SupervisorID     *int       `gogm:"-" bson:"-"`
 	Supervisor       *Person    `gogm:"direction=outgoing;relationship=supervised_by" bson:"-"`
 	AgentInvoices    []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=sold"`
 	CustomerInvoices []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=bought"`
@@ -41,10 +41,6 @@ func InterconnectPersonRoles(people *[]*Person) {
 }
 
 func MatchPeopleAndInvoices(people *[]*Person, invoices *[]*Invoice) {
-	p := make(map[int]*Person)
-	for k := range *people {
-		p[(*people)[k].PersonID] = (*people)[k]
-	}
 	for _, invoice := range *invoices {
 
 		for _, person := range *people {
@@ -62,11 +58,6 @@ func MatchPeopleAndInvoices(people *[]*Person, invoices *[]*Invoice) {
 }
 
 func MatchHirarchy(people *[]*Person, hierarchy *[]*Hierarchy) {
-	p := make(map[int]*Person)
-	for k, per := range *people {
-		pe := *people
-		p[pe[k].PersonID] = per
-	}
 	for _, set := range *hierarchy {
 		if set.Supervisor != nil {
 			for _, ag := range *people {
@@ -75,7 +66,7 @@ func MatchHirarchy(people *[]*Person, hierarchy *[]*Hierarchy) {
 						if sup.PersonID == set.Supervisor.PersonID {
 							sup.Employees = append(sup.Employees, ag)
 							ag.Supervisor = sup
-							ag.SupervisorID = sup.PersonID
+							ag.SupervisorID = &sup.PersonID
 						}
 					}
 				}
