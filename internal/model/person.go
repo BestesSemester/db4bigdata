@@ -6,7 +6,7 @@ import (
 
 type Person struct {
 	Neo4jBaseNode    `bson:"-"`
-	PersonID         *int64    `gorm:"primaryKey" gogm:"name=person_id"`
+	PersonID         int       `gorm:"primaryKey" gogm:"name=person_id"`
 	Name             string    `gogm:"name=name"`
 	FirstName        string    `gogm:"name=first_name"`
 	Street           string    `gogm:"name=street"`
