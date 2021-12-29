@@ -19,7 +19,7 @@ type Person struct {
 	RegistrationDate time.Time `gogm:"name=registration_date"`
 	RoleID           int
 	Role             *Role      `gogm:"direction=outgoing;relationship=hasRole"`
-	SupervisorID     *int64     `gogm:"-" bson:"-"`
+	SupervisorID     int        `gogm:"-" bson:"-"`
 	Supervisor       *Person    `gogm:"direction=outgoing;relationship=supervised_by" bson:"-"`
 	AgentInvoices    []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=sold"`
 	CustomerInvoices []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=bought"`
@@ -27,9 +27,9 @@ type Person struct {
 }
 
 func InterconnectPersonRoles(people *[]*Person) {
-	roles := make(map[int64]*Role)
+	roles := make(map[int]*Role)
 	for _, person := range *people {
-		roleid := *person.Role.RoleID
+		roleid := person.Role.RoleID
 		if roles[roleid] == nil {
 			roles[roleid] = person.Role
 		} else {
@@ -41,19 +41,19 @@ func InterconnectPersonRoles(people *[]*Person) {
 }
 
 func MatchPeopleAndInvoices(people *[]*Person, invoices *[]*Invoice) {
-	p := make(map[int64]*Person)
+	p := make(map[int]*Person)
 	for k := range *people {
-		p[*(*people)[k].PersonID] = (*people)[k]
+		p[(*people)[k].PersonID] = (*people)[k]
 	}
 	for _, invoice := range *invoices {
 
 		for _, person := range *people {
 
-			if *person.PersonID == *invoice.Agent.PersonID {
+			if person.PersonID == invoice.Agent.PersonID {
 				person.AgentInvoices = append(person.AgentInvoices, invoice)
 				invoice.Agent = person
 			}
-			if *person.PersonID == *invoice.Customer.PersonID {
+			if person.PersonID == invoice.Customer.PersonID {
 				person.CustomerInvoices = append(person.CustomerInvoices, invoice)
 				invoice.Customer = person
 			}
@@ -62,17 +62,17 @@ func MatchPeopleAndInvoices(people *[]*Person, invoices *[]*Invoice) {
 }
 
 func MatchHirarchy(people *[]*Person, hierarchy *[]*Hierarchy) {
-	p := make(map[int64]*Person)
+	p := make(map[int]*Person)
 	for k, per := range *people {
 		pe := *people
-		p[*pe[k].PersonID] = per
+		p[pe[k].PersonID] = per
 	}
 	for _, set := range *hierarchy {
 		if set.Supervisor != nil {
 			for _, ag := range *people {
-				if *ag.PersonID == *set.Agent.PersonID {
+				if ag.PersonID == set.Agent.PersonID {
 					for _, sup := range *people {
-						if *sup.PersonID == *set.Supervisor.PersonID {
+						if sup.PersonID == set.Supervisor.PersonID {
 							sup.Employees = append(sup.Employees, ag)
 							ag.Supervisor = sup
 							ag.SupervisorID = sup.PersonID
