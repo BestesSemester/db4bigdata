@@ -5,9 +5,11 @@ import (
 	"net/url"
 	"reflect"
 
+	pb "github.com/cheggaaa/pb/v3"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type MsSQLConfig struct {
@@ -20,6 +22,8 @@ type MsSQLConfig struct {
 type MsSQL struct {
 	db *gorm.DB
 }
+
+var depth = 0
 
 func ConnectMsSQL(conf *MsSQLConfig) (Database, error) {
 	mssql := &MsSQL{}
@@ -57,7 +61,7 @@ func (mssql *MsSQL) Save(obj interface{}) error {
 			return err
 		}
 	case reflect.Struct:
-		mssql.db.Save(obj)
+		mssql.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(obj)
 	default:
 		return fmt.Errorf("unsupported data type: %s", t.Kind())
 	}
@@ -67,10 +71,13 @@ func (mssql *MsSQL) Save(obj interface{}) error {
 func (mssql *MsSQL) saveIterable(obj interface{}) error {
 	// iterate over the slice (has to be abstracted, because we are working type-agnostic)
 	objs := getInterfacePointerSliceFromInterface(obj)
+	bar := pb.StartNew(len(objs))
 	for _, o := range objs {
 		// save
-		mssql.db.Save(o)
+		mssql.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(o)
+		bar.Increment()
 	}
+	bar.Finish()
 	return nil
 }
 
@@ -81,13 +88,69 @@ func (mssql *MsSQL) Delete(obj interface{}) error {
 
 // Returns sql-Result
 func (mssql *MsSQL) Find(qry interface{}, target interface{}) error {
-
-	mssql.db.Where(qry).First(&target)
 	t := reflect.TypeOf(target)
-	logrus.Println(t)
-	logrus.Println(getAsAbstractStructFieldSetFromInterface(target))
-	// logrus.Println(f.Tag.Get("mssql"))
+	logrus.Printf("%d", t.Kind())
+	switch t.Kind() {
+	case reflect.Ptr:
+		fs := getAsAbstractStructFieldSetFromInterface(target)
+		joinableFields := []string{}
+		preloadableFields := []string{}
+		for _, field := range fs.fields {
+			if field.tp.Type.Kind() == reflect.Ptr && (field.tp.Type.Elem().Kind() == reflect.Struct || field.tp.Type.Elem().Kind() == reflect.Slice || field.tp.Type.Elem().Kind() == reflect.Array) && field.tp.Tag.Get("gorm") != "-" {
+				joinableFields = append(joinableFields, field.key)
+				preloads := mssql.resolveStructFields(field, field.key, 6)
+				if preloads != nil {
+					preloadableFields = append(preloadableFields, preloads...)
+				}
+			}
+		}
+		logrus.Printf("Joining: %s", joinableFields)
+		logrus.Printf("Preloading: %s", preloadableFields)
+		tx := mssql.db.Set("gorm:auto_preload", true)
+		for _, joinableField := range joinableFields {
+			tx = tx.Joins(joinableField)
+		}
+		for _, preloadField := range preloadableFields {
+			tx = tx.Preload(preloadField)
+		}
+		tx.Debug().Where(qry).Find(&target)
+	default:
+		logrus.Errorln("no such implementation")
+	}
 	return nil
+}
+
+func (mssql *MsSQL) resolveStructFields(structure abstractStructField, parentname string, maxdepth int) []string {
+	// logrus.Println(structure)
+	if depth >= maxdepth {
+		return nil
+	}
+	depth++
+	preloadlist := []string{}
+	parent := structure.tp
+	parentType := parent.Type
+	if parentType.Kind() == reflect.Ptr {
+		parentType = parentType.Elem()
+	}
+	if parentType.Kind() != reflect.Struct {
+		return nil
+	}
+	for i := 0; i < parentType.NumField(); i++ {
+		child := parentType.Field(i)
+		if child.Type.Kind() == reflect.Ptr && child.Tag.Get("gorm") != "-" {
+			logrus.Println(child)
+			preloadlist = append(preloadlist, parentname+"."+child.Name)
+			field := abstractStructField{
+				tp: child,
+			}
+			fieldnames := mssql.resolveStructFields(field, parentname+"."+child.Name, 6)
+			// logrus.Println(fieldnames)
+			if fieldnames != nil {
+				preloadlist = append(preloadlist, fieldnames...)
+			}
+		}
+	}
+	return preloadlist
 }
 
 // Closes the database connection (should only be used if you close it on purpose)

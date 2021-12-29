@@ -2,27 +2,25 @@ package model
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type Person struct {
-	gorm.Model       `bson:"-"`
 	Neo4jBaseNode    `bson:"-"`
-	PersonID         int        `gorm:"primaryKey;" gogm:"name=person_id"`
-	Name             string     `gogm:"name=name"`
-	FirstName        string     `gogm:"name=first_name"`
-	Street           string     `gogm:"name=street"`
-	HouseNumber      string     `gogm:"name=house_number"`
-	ZipCode          string     `gogm:"name=zip_code"`
-	Residence        string     `gogm:"name=residence"`
-	PhoneNumber      string     `gogm:"name=phone_number"`
-	EmailAddress     string     `gogm:"name=email_address"`
-	BirthDate        time.Time  `gogm:"name=birth_date"`
-	RegistrationDate time.Time  `gogm:"name=registration_date"`
-	RoleID           int        `gogm:"name=role_id"`
-	Role             *Role      `gorm:"constraint:OnUpdate:CASCADE;OnDelete:SET NULL;" gogm:"direction=outgoing;relationship=hasRole"`
-	Supervisor       *Person    `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=supervised_by"`
+	PersonID         int       `gorm:"primaryKey" gogm:"name=person_id"`
+	Name             string    `gogm:"name=name"`
+	FirstName        string    `gogm:"name=first_name"`
+	Street           string    `gogm:"name=street"`
+	HouseNumber      string    `gogm:"name=house_number"`
+	ZipCode          string    `gogm:"name=zip_code"`
+	Residence        string    `gogm:"name=residence"`
+	PhoneNumber      string    `gogm:"name=phone_number"`
+	EmailAddress     string    `gogm:"name=email_address"`
+	BirthDate        time.Time `gogm:"name=birth_date"`
+	RegistrationDate time.Time `gogm:"name=registration_date"`
+	RoleID           int
+	Role             *Role      `gogm:"direction=outgoing;relationship=hasRole"`
+	SupervisorID     *int       `gogm:"-" bson:"-"`
+	Supervisor       *Person    `gogm:"direction=outgoing;relationship=supervised_by" bson:"-"`
 	AgentInvoices    []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=sold"`
 	CustomerInvoices []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=bought"`
 	Employees        []*Person  `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=supervised_by"`
@@ -55,7 +53,6 @@ func MatchPeopleAndInvoices(people []Person, in []Invoice) ([]Person, []Invoice)
 		customer := p[invoice.Customer.PersonID]
 		in[i].Agent = agent
 		in[i].Customer = customer
-		in[i].ProvisionSum = in[i].NetSum * .1
 		customer.CustomerInvoices = append(p[invoice.Customer.PersonID].CustomerInvoices, &save_invoice)
 		p[invoice.Customer.PersonID] = customer
 		agent.AgentInvoices = append(p[invoice.Agent.PersonID].AgentInvoices, &save_invoice)
@@ -80,6 +77,7 @@ func MatchHirarchy(people []Person, hierarchy []Hierarchy) []Person {
 			supervisor := p[hi.Supervisor.PersonID]
 			agent := p[agentID]
 			agent.Supervisor = supervisor
+			agent.SupervisorID = &supervisor.PersonID
 			supervisor.Employees = append(supervisor.Employees, agent)
 		}
 		// if agentID == 1078 {

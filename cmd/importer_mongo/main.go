@@ -18,7 +18,6 @@ func main() {
 		logrus.Fatal("Import to MongoDB failed: ", err)
 	}
 
-	// Call importer
 	persons := []model.Person{}
 	importer.ImportPersonsFromJSON("./generators/output_data/persons.json", &persons)
 	err = mongo.Save(persons)
