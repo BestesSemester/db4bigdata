@@ -6,18 +6,18 @@ import (
 
 type Person struct {
 	Neo4jBaseNode    `bson:"-"`
-	PersonID         int       `gorm:"primaryKey" gogm:"name=person_id"`
-	Name             string    `gogm:"name=name"`
-	FirstName        string    `gogm:"name=first_name"`
-	Street           string    `gogm:"name=street"`
-	HouseNumber      string    `gogm:"name=house_number"`
-	ZipCode          string    `gogm:"name=zip_code"`
-	Residence        string    `gogm:"name=residence"`
-	PhoneNumber      string    `gogm:"name=phone_number"`
-	EmailAddress     string    `gogm:"name=email_address"`
-	BirthDate        time.Time `gogm:"name=birth_date"`
-	RegistrationDate time.Time `gogm:"name=registration_date"`
-	RoleID           int
+	PersonID         int        `gorm:"primaryKey" gogm:"name=person_id"`
+	Name             string     `gogm:"name=name"`
+	FirstName        string     `gogm:"name=first_name"`
+	Street           string     `gogm:"name=street"`
+	HouseNumber      string     `gogm:"name=house_number"`
+	ZipCode          string     `gogm:"name=zip_code"`
+	Residence        string     `gogm:"name=residence"`
+	PhoneNumber      string     `gogm:"name=phone_number"`
+	EmailAddress     string     `gogm:"name=email_address"`
+	BirthDate        time.Time  `gogm:"name=birth_date"`
+	RegistrationDate time.Time  `gogm:"name=registration_date"`
+	RoleID           int        `gogm: name=role_id`
 	Role             *Role      `gogm:"direction=outgoing;relationship=hasRole"`
 	SupervisorID     *int       `gogm:"-" bson:"-"`
 	Supervisor       *Person    `gogm:"direction=outgoing;relationship=supervised_by" bson:"-"`
@@ -42,7 +42,7 @@ func InterconnectPersonRoles(people *[]*Person) {
 
 func MatchPeopleAndInvoices(people *[]*Person, invoices *[]*Invoice) {
 	for _, invoice := range *invoices {
-
+		invoice.ProvisionSum = .1 * invoice.NetSum
 		for _, person := range *people {
 
 			if person.PersonID == invoice.Agent.PersonID {
