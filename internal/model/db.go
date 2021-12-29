@@ -133,7 +133,11 @@ func getInterfacePointerSliceFromInterface(inf interface{}) []interface{} {
 	v := getDirectStructFromInterface(inf)
 	var objs []interface{}
 	for i := 0; i < v.Len(); i++ {
-		objs = append(objs, v.Index(i).Addr().Interface())
+		if v.Index(i).Kind() == reflect.Ptr {
+			objs = append(objs, v.Index(i).Interface())
+		} else {
+			objs = append(objs, v.Index(i).Addr().Interface())
+		}
 	}
 	return objs
 }

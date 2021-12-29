@@ -11,7 +11,7 @@ import (
 func main() {
 	util.SetupLogs()
 	logrus.Println("hello")
-	mssql, err := model.ConnectStorage(model.Neo4J)
+	neo4j, err := model.ConnectStorage(model.Neo4J)
 	if err != nil {
 		logrus.Fatalln(err)
 	}
@@ -21,6 +21,6 @@ func main() {
 
 	p_target := model.Person{}
 
-	mssql.Find(&p, &p_target)
+	neo4j.Find(&p, &p_target)
 
 }

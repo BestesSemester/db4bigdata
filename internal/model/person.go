@@ -6,7 +6,7 @@ import (
 
 type Person struct {
 	Neo4jBaseNode    `bson:"-"`
-	PersonID         int       `gorm:"primaryKey" gogm:"name=person_id"`
+	PersonID         *int64    `gorm:"primaryKey" gogm:"name=person_id"`
 	Name             string    `gogm:"name=name"`
 	FirstName        string    `gogm:"name=first_name"`
 	Street           string    `gogm:"name=street"`
@@ -19,74 +19,67 @@ type Person struct {
 	RegistrationDate time.Time `gogm:"name=registration_date"`
 	RoleID           int
 	Role             *Role      `gogm:"direction=outgoing;relationship=hasRole"`
-	SupervisorID     *int       `gogm:"-" bson:"-"`
+	SupervisorID     *int64     `gogm:"-" bson:"-"`
 	Supervisor       *Person    `gogm:"direction=outgoing;relationship=supervised_by" bson:"-"`
 	AgentInvoices    []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=sold"`
 	CustomerInvoices []*Invoice `gorm:"-" bson:"-" gogm:"direction=outgoing;relationship=bought"`
 	Employees        []*Person  `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=supervised_by"`
 }
 
-func InterconnectPersonRoles(pe *[]Person) {
-	roles := make(map[int]*Role)
-	people := *pe
-	for i := range people {
-		roleid := people[i].Role.RoleID
+func InterconnectPersonRoles(people *[]*Person) {
+	roles := make(map[int64]*Role)
+	for _, person := range *people {
+		roleid := *person.Role.RoleID
 		if roles[roleid] == nil {
-			roles[roleid] = people[i].Role
+			roles[roleid] = person.Role
 		} else {
-			people[i].Role = roles[roleid]
+			person.Role = roles[roleid]
 		}
-		role := roles[roleid]
-		role.People = append(role.People, &people[i])
+		roles[roleid].People = append(roles[roleid].People, person)
 	}
-	pe = &people
+
 }
 
-func MatchPeopleAndInvoices(people []Person, in []Invoice) ([]Person, []Invoice) {
-	p := make(map[int]*Person)
-	for k := range people {
-		p[people[k].PersonID] = &people[k]
+func MatchPeopleAndInvoices(people *[]*Person, invoices *[]*Invoice) {
+	p := make(map[int64]*Person)
+	for k := range *people {
+		p[*(*people)[k].PersonID] = (*people)[k]
 	}
-	for i, invoice := range in {
-		save_invoice := invoice
-		agent := p[invoice.Agent.PersonID]
-		customer := p[invoice.Customer.PersonID]
-		in[i].Agent = agent
-		in[i].Customer = customer
-		customer.CustomerInvoices = append(p[invoice.Customer.PersonID].CustomerInvoices, &save_invoice)
-		p[invoice.Customer.PersonID] = customer
-		agent.AgentInvoices = append(p[invoice.Agent.PersonID].AgentInvoices, &save_invoice)
-		p[invoice.Agent.PersonID] = agent
+	for _, invoice := range *invoices {
+
+		for _, person := range *people {
+
+			if *person.PersonID == *invoice.Agent.PersonID {
+				person.AgentInvoices = append(person.AgentInvoices, invoice)
+				invoice.Agent = person
+			}
+			if *person.PersonID == *invoice.Customer.PersonID {
+				person.CustomerInvoices = append(person.CustomerInvoices, invoice)
+				invoice.Customer = person
+			}
+		}
 	}
-	outPeople := []Person{}
-	for k := range p {
-		outPeople = append(outPeople, *p[k])
-	}
-	return outPeople, in
 }
 
-func MatchHirarchy(people []Person, hierarchy []Hierarchy) []Person {
-	p := make(map[int]*Person)
-	for k := range people {
-		p[people[k].PersonID] = &people[k]
+func MatchHirarchy(people *[]*Person, hierarchy *[]*Hierarchy) {
+	p := make(map[int64]*Person)
+	for k, per := range *people {
+		pe := *people
+		p[*pe[k].PersonID] = per
 	}
-	for _, hi := range hierarchy {
-		agentID := hi.Agent.PersonID
-
-		if hi.Supervisor != nil {
-			supervisor := p[hi.Supervisor.PersonID]
-			agent := p[agentID]
-			agent.Supervisor = supervisor
-			agent.SupervisorID = &supervisor.PersonID
-			supervisor.Employees = append(supervisor.Employees, agent)
+	for _, set := range *hierarchy {
+		if set.Supervisor != nil {
+			for _, ag := range *people {
+				if *ag.PersonID == *set.Agent.PersonID {
+					for _, sup := range *people {
+						if *sup.PersonID == *set.Supervisor.PersonID {
+							sup.Employees = append(sup.Employees, ag)
+							ag.Supervisor = sup
+							ag.SupervisorID = sup.PersonID
+						}
+					}
+				}
+			}
 		}
-		// if agentID == 1078 {
-		// 	logrus.Println(p[agentID])
-		// }
 	}
-	outPeople := []Person{}
-	for k := range p {
-		outPeople = append(outPeople, *p[k])
-	}
-	return outPeople
 }
