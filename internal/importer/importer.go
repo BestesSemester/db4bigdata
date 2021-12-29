@@ -48,3 +48,15 @@ func ImportInvoiceFromJSON(jsonfile string, invoices *[]model.Invoice) {
 		logrus.Fatal(err)
 	}
 }
+
+func ImportInterfaceFromJSON(jsonfile string, inf interface{}) {
+	// Let's first read the `config.json` file
+	content, err := ioutil.ReadFile(jsonfile)
+	if err != nil {
+		logrus.Fatal("Error when opening file: ", err)
+	}
+	err = json.Unmarshal(content, inf)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+}

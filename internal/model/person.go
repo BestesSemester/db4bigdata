@@ -26,51 +26,54 @@ type Person struct {
 	Employees        []*Person  `gorm:"-" bson:"-" gogm:"direction=incoming;relationship=supervised_by"`
 }
 
-func InterconnectPersonRoles(pe *[]Person) {
+func InterconnectPersonRoles(people *[]*Person) {
 	roles := make(map[int64]*Role)
-	people := *pe
-	for i := range people {
-		roleid := people[i].Role.RoleID
-		if roles[*roleid] == nil {
-			roles[*roleid] = people[i].Role
+	for _, person := range *people {
+		roleid := *person.Role.RoleID
+		if roles[roleid] == nil {
+			roles[roleid] = person.Role
 		} else {
-			people[i].Role = roles[*roleid]
+			person.Role = roles[roleid]
 		}
-		role := roles[*roleid]
-		role.People = append(role.People, &people[i])
+		roles[roleid].People = append(roles[roleid].People, person)
 	}
-	pe = &people
 }
 
-func MatchPeopleAndInvoices(people []Person, in []Invoice) ([]Person, []Invoice) {
+func MatchPeopleAndInvoices(people *[]*Person, invoices *[]*Invoice) {
 	p := make(map[int64]*Person)
-	for k := range people {
-		p[*people[k].PersonID] = &people[k]
+	for k := range *people {
+		p[*(*people)[k].PersonID] = (*people)[k]
 	}
-	for i, invoice := range in {
+	for _, invoice := range *invoices {
 		save_invoice := invoice
-		agent := p[*invoice.Agent.PersonID]
-		customer := p[*invoice.Customer.PersonID]
-		in[i].Agent = agent
-		in[i].Customer = customer
-		customer.CustomerInvoices = append(p[*invoice.Customer.PersonID].CustomerInvoices, &save_invoice)
-		p[*invoice.Customer.PersonID] = customer
-		agent.AgentInvoices = append(p[*invoice.Agent.PersonID].AgentInvoices, &save_invoice)
-		p[*invoice.Agent.PersonID] = agent
+		// agent := p[*invoice.Agent.PersonID]
+		// customer := p[*invoice.Customer.PersonID]
+		// (*invoices)[i].Agent = agent
+		// (*invoices)[i].Customer = customer
+		// customer.CustomerInvoices = append(p[*invoice.Customer.PersonID].CustomerInvoices, &save_invoice)
+		// p[*invoice.Customer.PersonID] = customer
+		// agent.AgentInvoices = append(p[*invoice.Agent.PersonID].AgentInvoices, &save_invoice)
+		// p[*invoice.Agent.PersonID] = agent
+		for _, person := range *people {
+			if person.PersonID == invoice.Agent.PersonID {
+				person.AgentInvoices = append(person.AgentInvoices, save_invoice)
+				invoice.Agent = person
+			}
+			if person.PersonID == invoice.Customer.PersonID {
+				person.CustomerInvoices = append(person.CustomerInvoices, save_invoice)
+				invoice.Customer = person
+			}
+		}
 	}
-	outPeople := []Person{}
-	for k := range p {
-		outPeople = append(outPeople, *p[k])
-	}
-	return outPeople, in
 }
 
-func MatchHirarchy(people []Person, hierarchy []Hierarchy) []Person {
+func MatchHirarchy(people *[]*Person, hierarchy *[]*Hierarchy) []Person {
 	p := make(map[int64]*Person)
-	for k := range people {
-		p[*people[k].PersonID] = &people[k]
+	for k, per := range *people {
+		pe := *people
+		p[*pe[k].PersonID] = per
 	}
-	for _, hi := range hierarchy {
+	for _, hi := range *hierarchy {
 		agentID := hi.Agent.PersonID
 
 		if hi.Supervisor != nil {
