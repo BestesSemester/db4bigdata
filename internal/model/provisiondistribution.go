@@ -1,7 +1,9 @@
 package model
 
 type ProvisionDistribution struct {
-	Invoice       Invoice
-	Agent         Person
+	InvoiceID     int
+	Invoice       *Invoice
+	AgentID       int
+	Agent         *Person
 	ProvisionPart float32
 }

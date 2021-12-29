@@ -24,7 +24,7 @@ func main() {
 	people := []*model.Person{}
 	hierarchy := []*model.Hierarchy{}
 
-	mssql.Migrate(&model.Person{}, &model.Role{}, &model.Hierarchy{}, &model.Invoice{}, &model.Provision{})
+	mssql.Migrate(&model.Person{}, &model.Role{}, &model.Hierarchy{}, &model.Invoice{}, &model.Provision{}, &model.ProvisionDistribution{})
 
 	importer.ImportInterfaceFromJSON("./generators/output_data/invoices.json", &invoices)
 	importer.ImportInterfaceFromJSON("./generators/output_data/persons.json", &people)
