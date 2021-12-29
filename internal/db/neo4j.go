@@ -1,4 +1,4 @@
-package model
+package db
 
 import (
 	"context"
@@ -8,17 +8,10 @@ import (
 	"reflect"
 	"strconv"
 
+	"git.sys-tem.org/caos/db4bigdata/internal/model"
 	"github.com/mindstand/gogm/v2"
 	"github.com/sirupsen/logrus"
 )
-
-type Neo4jBaseNode struct {
-	Id *int64 `json:"-" gogm:"pk=default" gorm:"-" bson:"-"`
-	// LoadMap represents the state of how a node was loaded for neo4j.
-	// This is used to determine if relationships are removed on save
-	// field -- relations
-	LoadMap map[string]*gogm.RelationConfig `json:"-" gogm:"-" gorm:"-" bson:"-"`
-}
 
 type Neo4jConfig struct {
 	URL      url.URL
@@ -49,7 +42,7 @@ func ConnectNeo4j(conf *Neo4jConfig) (Database, error) {
 		IndexStrategy:    gogm.IGNORE_INDEX,
 	}
 
-	conn, err := gogm.New(&config, gogm.DefaultPrimaryKeyStrategy, &Person{}, &Role{}, &Invoice{})
+	conn, err := gogm.New(&config, gogm.DefaultPrimaryKeyStrategy, &model.Person{}, &model.Role{}, &model.Invoice{})
 	if err != nil {
 		logrus.Errorln(err)
 		return nil, err

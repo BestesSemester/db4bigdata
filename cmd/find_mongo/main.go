@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"git.sys-tem.org/caos/db4bigdata/internal/db"
 	"git.sys-tem.org/caos/db4bigdata/internal/model"
 	"git.sys-tem.org/caos/db4bigdata/internal/performancemeasurement"
 	"git.sys-tem.org/caos/db4bigdata/internal/util"
@@ -28,11 +29,11 @@ func main() {
 
 	logrus.Info("Start to calculate provision for agent ", agentId)
 
-	pm := performancemeasurement.New(model.MongoDB, "find_mongo")
+	pm := performancemeasurement.New(db.MongoDB, "find_mongo")
 	pm.Start("MongoDB calculate performance", 1*time.Second)
 	startTime := time.Now()
 
-	mongo, err := model.ConnectStorage(model.MongoDB)
+	mongo, err := db.ConnectStorage(db.MongoDB)
 	if err != nil {
 		logrus.Fatal("Connect to MongoDB failed: ", err)
 	}
@@ -90,7 +91,7 @@ func addProvisionToProvisionMap(m map[uint]float32, id int, provision float32) {
 }
 
 // !!!! Attention - Recursive function !!!!
-func findAllSupervisorsByAgentPersonId(mongo model.Database, personID int) []int {
+func findAllSupervisorsByAgentPersonId(mongo db.Database, personID int) []int {
 	var ret []int
 	var supervisorId, err = findSupervisorIDByAgentPersonId(mongo, personID)
 	if err != nil {
@@ -106,7 +107,7 @@ func findAllSupervisorsByAgentPersonId(mongo model.Database, personID int) []int
 	}
 }
 
-func findSupervisorIDByAgentPersonId(mongo model.Database, personID int) (int, error) {
+func findSupervisorIDByAgentPersonId(mongo db.Database, personID int) (int, error) {
 	var agent_hierarchy []model.Hierarchy
 	var agent_hierarchy_qry = bson.D{{"agentid", personID}}
 
@@ -125,7 +126,7 @@ func findSupervisorIDByAgentPersonId(mongo model.Database, personID int) (int, e
 }
 
 // !!!! Attention - Recursive function !!!!
-func findAllDownlineAgents(mongo model.Database, personID int) []int {
+func findAllDownlineAgents(mongo db.Database, personID int) []int {
 	ret := []int{personID}
 	var agentIds, err = findAgentsBySupervisorId(mongo, personID)
 	if err != nil {
@@ -143,7 +144,7 @@ func findAllDownlineAgents(mongo model.Database, personID int) []int {
 	}
 }
 
-func findAgentsBySupervisorId(mongo model.Database, personID int) ([]int, error) {
+func findAgentsBySupervisorId(mongo db.Database, personID int) ([]int, error) {
 	var agent_hierarchy []model.Hierarchy
 	var agent_hierarchy_qry = bson.D{{"supervisorid", personID}}
 
