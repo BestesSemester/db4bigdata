@@ -77,8 +77,9 @@ func main() {
 	}
 
 	// Stop performance measurement
-	pm.Stop()
 	elapsed := time.Since(startTime)
+	pm.MeasureTime("find_mongo", startTime)
+	pm.Stop()
 
 	logrus.Info("Finished to calculate provision in ", elapsed)
 	logrus.Info("Provsion for agent ", agentId, " is ", provision_map[uint(agentId)])
