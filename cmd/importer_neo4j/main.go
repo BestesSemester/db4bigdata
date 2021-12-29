@@ -32,7 +32,7 @@ func main() {
 	importer.ImportInterfaceFromJSON("./generators/output_data/hierarchy.json", &hierarchy)
 	importer.ImportInterfaceFromJSON("./generators/output_data/invoices.json", &invoices)
 	model.InterconnectPersonRoles(&people)
-	// hpeople := model.MatchHirarchy(&people, &hierarchy)
+	model.MatchHirarchy(&people, &hierarchy)
 
 	model.MatchPeopleAndInvoices(&people, &invoices)
 	str, err := json.MarshalIndent(&invoices, "", "	")

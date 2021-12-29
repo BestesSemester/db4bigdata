@@ -77,14 +77,14 @@ func (neo4j *Neo4j) Save(obj interface{}) error {
 		for i, o := range objs {
 			logrus.Printf("Saving object no. %d", i)
 			logrus.Println(o)
-			err := neo4j.session.SaveDepth(context.Background(), o, 5)
+			err := neo4j.session.SaveDepth(context.Background(), o, 2)
 			if err != nil {
 				logrus.Errorln(err)
 				return err
 			}
 		}
 	case reflect.Struct:
-		if err := neo4j.session.SaveDepth(context.Background(), obj, 5); err != nil {
+		if err := neo4j.session.SaveDepth(context.Background(), obj, 2); err != nil {
 			logrus.Errorln(err)
 			return err
 		}

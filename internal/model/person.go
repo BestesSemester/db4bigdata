@@ -37,6 +37,7 @@ func InterconnectPersonRoles(people *[]*Person) {
 		}
 		roles[roleid].People = append(roles[roleid].People, person)
 	}
+
 }
 
 func MatchPeopleAndInvoices(people *[]*Person, invoices *[]*Invoice) {
@@ -45,51 +46,40 @@ func MatchPeopleAndInvoices(people *[]*Person, invoices *[]*Invoice) {
 		p[*(*people)[k].PersonID] = (*people)[k]
 	}
 	for _, invoice := range *invoices {
-		save_invoice := invoice
-		// agent := p[*invoice.Agent.PersonID]
-		// customer := p[*invoice.Customer.PersonID]
-		// (*invoices)[i].Agent = agent
-		// (*invoices)[i].Customer = customer
-		// customer.CustomerInvoices = append(p[*invoice.Customer.PersonID].CustomerInvoices, &save_invoice)
-		// p[*invoice.Customer.PersonID] = customer
-		// agent.AgentInvoices = append(p[*invoice.Agent.PersonID].AgentInvoices, &save_invoice)
-		// p[*invoice.Agent.PersonID] = agent
+
 		for _, person := range *people {
-			if person.PersonID == invoice.Agent.PersonID {
-				person.AgentInvoices = append(person.AgentInvoices, save_invoice)
+
+			if *person.PersonID == *invoice.Agent.PersonID {
+				person.AgentInvoices = append(person.AgentInvoices, invoice)
 				invoice.Agent = person
 			}
-			if person.PersonID == invoice.Customer.PersonID {
-				person.CustomerInvoices = append(person.CustomerInvoices, save_invoice)
+			if *person.PersonID == *invoice.Customer.PersonID {
+				person.CustomerInvoices = append(person.CustomerInvoices, invoice)
 				invoice.Customer = person
 			}
 		}
 	}
 }
 
-func MatchHirarchy(people *[]*Person, hierarchy *[]*Hierarchy) []Person {
+func MatchHirarchy(people *[]*Person, hierarchy *[]*Hierarchy) {
 	p := make(map[int64]*Person)
 	for k, per := range *people {
 		pe := *people
 		p[*pe[k].PersonID] = per
 	}
-	for _, hi := range *hierarchy {
-		agentID := hi.Agent.PersonID
-
-		if hi.Supervisor != nil {
-			supervisor := p[*hi.Supervisor.PersonID]
-			agent := p[*agentID]
-			agent.Supervisor = supervisor
-			agent.SupervisorID = supervisor.PersonID
-			supervisor.Employees = append(supervisor.Employees, agent)
+	for _, set := range *hierarchy {
+		if set.Supervisor != nil {
+			for _, ag := range *people {
+				if *ag.PersonID == *set.Agent.PersonID {
+					for _, sup := range *people {
+						if *sup.PersonID == *set.Supervisor.PersonID {
+							sup.Employees = append(sup.Employees, ag)
+							ag.Supervisor = sup
+							ag.SupervisorID = sup.PersonID
+						}
+					}
+				}
+			}
 		}
-		// if agentID == 1078 {
-		// 	logrus.Println(p[agentID])
-		// }
 	}
-	outPeople := []Person{}
-	for k := range p {
-		outPeople = append(outPeople, *p[k])
-	}
-	return outPeople
 }
