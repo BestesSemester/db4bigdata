@@ -92,27 +92,8 @@ func (neo4j *Neo4j) Delete(obj interface{}) error {
 	return nil
 }
 
-// Returns Neo4j-Result
+// Find - Does nothing
 func (neo4j *Neo4j) Find(qry interface{}, target interface{}) error {
-	query := `
-MATCH (p:Person {person_id: $PersonID})-[*]->(n)
-RETURN p,n
-`
-
-	var qryInterface map[string]interface{}
-	inrec, err := json.Marshal(qry)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(inrec, &qryInterface)
-	if err != nil {
-		return err
-	}
-	logrus.Println(qryInterface)
-	neo4j.session.Query(context.Background(), query, qryInterface, target)
-	t := reflect.TypeOf(target)
-	logrus.Println(t)
-	logrus.Println(getAsAbstractStructFieldSetFromInterface(target))
 	return nil
 }
 
@@ -121,6 +102,7 @@ func (neo4j *Neo4j) Migrate(inf ...interface{}) error {
 	return fmt.Errorf("no implementation")
 }
 
+//Exec - Ecexutes Cypher query
 func (neo4j *Neo4j) Exec(qry string, inf interface{}) error {
 	var qryInterface map[string]interface{}
 	inrec, err := json.Marshal(inf)
@@ -135,7 +117,7 @@ func (neo4j *Neo4j) Exec(qry string, inf interface{}) error {
 
 		return err
 	}
-	// logrus.Println(qryInterface)
+
 	res, _, err := neo4j.session.QueryRaw(context.Background(), qry, nil)
 	if err != nil {
 		logrus.Errorln(err)
