@@ -141,6 +141,9 @@ func (neo4j *Neo4j) Exec(qry string, inf interface{}) error {
 		logrus.Errorln(err)
 		return err
 	}
+	if len(res) < 1 || len(res[0]) < 1 {
+		return nil
+	}
 	resj, _ := json.MarshalIndent(&res[0][0], "", "	")
 	err = json.Unmarshal(resj, &inf)
 	if err != nil {
