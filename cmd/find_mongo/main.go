@@ -27,8 +27,8 @@ func main() {
 	logrus.Info("Start to calculate provision for agent ", agentId)
 
 	// Start performance measurement
-	pm := performancemeasurement.New(db.MongoDB, "find_mongo")
-	pm.Start("MongoDB calculate performance", 1*time.Second)
+	pm := performancemeasurement.New(db.MongoDB, "mongo_"+argsWithoutProg[0]+"_"+argsWithoutProg[1]+"_"+argsWithoutProg[2])
+	pm.Start("", 1*time.Second)
 	startTime := time.Now()
 
 	mongo, err := db.ConnectStorage(db.MongoDB)
@@ -77,8 +77,9 @@ func main() {
 	}
 
 	// Stop performance measurement
-	pm.Stop()
 	elapsed := time.Since(startTime)
+	pm.MeasureTime("find_mongo", startTime)
+	pm.Stop()
 
 	logrus.Info("Finished to calculate provision in ", elapsed)
 	logrus.Info("Provsion for agent ", agentId, " is ", provision_map[uint(agentId)])

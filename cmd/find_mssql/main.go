@@ -25,8 +25,9 @@ func main() {
 	agentId, _ := strconv.Atoi(argsWithoutProg[0])
 	startDate, _ := time.Parse("2006-01-02", argsWithoutProg[1])
 	endDate, _ := time.Parse("2006-01-02", argsWithoutProg[2])
+	startTime := time.Now()
 
-	pm := performancemeasurement.New(db.MSQL, "find_mssql")
+	pm := performancemeasurement.New(db.MSQL, "mssql_"+argsWithoutProg[0]+"_"+argsWithoutProg[1]+"_"+argsWithoutProg[2])
 	pm.Start("MSSQL calculate performance", 1*time.Second)
 
 	//Connection to server
@@ -137,7 +138,11 @@ func main() {
 		// logrus.Println(string(jh))
 	*/
 
+	elapsed := time.Since(startTime)
+	pm.MeasureTime("find_mssql", startTime)
 	pm.Stop()
+
+	logrus.Info("Finished to calculate provision in ", elapsed)
 }
 
 func getPeopleHierarchyForInvoice(mssql db.Database, invoice *model.Invoice) error {

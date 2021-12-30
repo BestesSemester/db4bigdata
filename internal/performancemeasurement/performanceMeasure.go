@@ -89,8 +89,8 @@ func (p *PerformanceMeasurement) ReadMeasureTime() {
 			p.stopChannel <- true
 		}
 		elapsed := time.Since(config.StartTime)
-		logrus.Printf("TIME: %s took %s\n", config.Operation, elapsed)
-		prtstr := fmt.Sprintf("TIME: It took %s Seconds to do the %s-operation", elapsed, config.Operation)
+		// logrus.Printf("TIME: %s took %s\n", config.Operation, elapsed)
+		prtstr := fmt.Sprintf("TIME:,%s", elapsed)
 		p.writeToFile(prtstr)
 	}
 }
@@ -108,16 +108,16 @@ func (p *PerformanceMeasurement) ReadMeasureRAM(operation string, interval time.
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			return
 		}
-		prtstr := fmt.Sprintf("RAM: Alloc = %v bytes for %s.", memory.Used, operation)
+		prtstr := fmt.Sprintf("RAM:,%v", memory.Used)
 		p.writeToFile(prtstr)
-		logrus.Println(prtstr)
+		// logrus.Println(prtstr)
 		time.Sleep(interval)
 	}
 }
 
 // readMeasureCPU - Measures how much CPU power was needed to complete the operation.
 func (p *PerformanceMeasurement) readMeasureCPU(operation string, interval time.Duration) {
-	logrus.Println(p.stopChannelCPU)
+	// logrus.Println(p.stopChannelCPU)
 	for {
 		select {
 		case <-p.stopChannelCPU:
@@ -125,9 +125,9 @@ func (p *PerformanceMeasurement) readMeasureCPU(operation string, interval time.
 		default:
 		}
 		percent, _ := cpu.Percent(0, true)
-		prtstr := fmt.Sprintf("CPU: It took %.2f percent cpu power to do the %s-operation", percent[0], operation)
+		prtstr := fmt.Sprintf("CPU:,%.2f", percent[0])
 		p.writeToFile(prtstr)
-		logrus.Println(prtstr)
+		// logrus.Println(prtstr)
 		time.Sleep(interval)
 	}
 }
