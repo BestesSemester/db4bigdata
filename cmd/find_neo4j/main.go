@@ -1,10 +1,13 @@
 package main
 
 import (
+	"os"
 	"strconv"
+	"time"
 
 	"git.sys-tem.org/caos/db4bigdata/internal/db"
 	"git.sys-tem.org/caos/db4bigdata/internal/model"
+	"git.sys-tem.org/caos/db4bigdata/internal/performancemeasurement"
 	"git.sys-tem.org/caos/db4bigdata/internal/util"
 
 	"github.com/sirupsen/logrus"
@@ -13,16 +16,29 @@ import (
 // This package should run to generate and import new data into the database system
 func main() {
 	util.SetupLogs()
-	logrus.Println("hello")
+
+	// Parse command line arguments
+	argsWithoutProg := os.Args[1:]
+	agentId, _ := strconv.Atoi(argsWithoutProg[0])
+	startdate := argsWithoutProg[1]
+	enddate := argsWithoutProg[2]
+
+	logrus.Info("Start to calculate provision for agent ", agentId)
+
+	// Start performance measurement
+	pm := performancemeasurement.New(db.Neo4J, "neo4j_"+argsWithoutProg[0]+"_"+argsWithoutProg[1]+"_"+argsWithoutProg[2])
+	pm.Start("", 1*time.Second)
+	startTime := time.Now()
+
 	neo4j, err := db.ConnectStorage(db.Neo4J)
 	if err != nil {
 		logrus.Fatalln(err)
 	}
 
-	startdate := "2000-01-01"
-	enddate := "2021-12-30"
+	//startdate := "2000-01-01"
+	//enddate := "2021-12-30"
 
-	p := model.Person{PersonID: 142}
+	p := model.Person{PersonID: agentId}
 	//p := model.Person{Name: "Meier"}
 
 	res := struct {
@@ -41,9 +57,15 @@ func main() {
 				{i:i,agent:agent,supervisor:supervisor, role:role})
 				YIELD value
 				RETURN {PersonID: supervisor.person_id, Provision: SUM(value.provision)}`
-	// logrus.Println(neoqry)
-	// neo4j.Find(&p, &p_target)
+
 	neo4j.Exec(neoqry, &res)
+
+	// Stop performance measurement
+	elapsed := time.Since(startTime)
+	pm.MeasureTime("find_neo4j", startTime)
+	pm.Stop()
+
+	logrus.Info("Finished to calculate provision in ", elapsed)
 	logrus.Println(res)
 
 }
