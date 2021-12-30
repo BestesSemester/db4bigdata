@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"reflect"
@@ -151,6 +152,10 @@ func (mssql *MsSQL) resolveStructFields(structure abstractStructField, parentnam
 		}
 	}
 	return preloadlist
+}
+
+func (mssql *MsSQL) Exec(qry string, inf interface{}) error {
+	return errors.New("not implemented")
 }
 
 // Closes the database connection (should only be used if you close it on purpose)

@@ -1,8 +1,6 @@
 package main
 
 import (
-	// "git.sys-tem.org/caos/db4bigdata/internal/importer"
-
 	"errors"
 	"os"
 	"strconv"
@@ -17,20 +15,20 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// This package should run to find persons
 func main() {
-	// AgentID, StartPayDate, EndPayDate
 	util.SetupLogs()
-	argsWithoutProg := os.Args[1:]
 
+	// Parse command line arguments
+	argsWithoutProg := os.Args[1:]
 	agentId, _ := strconv.Atoi(argsWithoutProg[0])
 	startDate, _ := time.Parse("2006-01-02", argsWithoutProg[1])
 	endDate, _ := time.Parse("2006-01-02", argsWithoutProg[2])
 
 	logrus.Info("Start to calculate provision for agent ", agentId)
 
-	pm := performancemeasurement.New(db.MongoDB, "find_mongo")
-	pm.Start("MongoDB calculate performance", 1*time.Second)
+	// Start performance measurement
+	pm := performancemeasurement.New(db.MongoDB, "mongo_"+argsWithoutProg[0]+"_"+argsWithoutProg[1]+"_"+argsWithoutProg[2])
+	pm.Start("", 1*time.Second)
 	startTime := time.Now()
 
 	mongo, err := db.ConnectStorage(db.MongoDB)
@@ -42,8 +40,11 @@ func main() {
 	provision_map := make(map[uint]float32)
 	supervisors_map := make(map[uint][]int)
 
+	// Find downline for Agent
 	downline_ids := findAllDownlineAgents(mongo, agentId)
-	// mongo.Find(bson.D{{"agent.personid", bson.D{{"$in", downline_ids}}}}, &all_invoices)
+
+	// Find all relevant invoices to not get all invoices within database
+	// Based on relevant agents and the time span given by StartDate and EndDate
 	mongo.Find(bson.D{
 		{"invoicedate", bson.D{{"$gte", startDate}, {"$lt", endDate}}},
 		{"agentid", bson.D{{"$in", downline_ids}}},
@@ -70,13 +71,15 @@ func main() {
 			for _, supervisorID := range supervisorIds {
 				addProvisionToProvisionMap(provision_map, supervisorID, provision_for_others)
 			}
-		} else {
-			// No supervisor = whole provision for the agent
+		} else { // Agent has no supervisor = whole provision for the agent
 			addProvisionToProvisionMap(provision_map, invoice_agentID, invoice_provision)
 		}
 	}
-	pm.Stop()
+
+	// Stop performance measurement
 	elapsed := time.Since(startTime)
+	pm.MeasureTime("find_mongo", startTime)
+	pm.Stop()
 
 	logrus.Info("Finished to calculate provision in ", elapsed)
 	logrus.Info("Provsion for agent ", agentId, " is ", provision_map[uint(agentId)])
@@ -100,9 +103,8 @@ func findAllSupervisorsByAgentPersonId(mongo db.Database, personID int) []int {
 	}
 
 	if supervisorId == 0 || supervisorId == -1 { // If supervisorID is 0 this is the big boss
-		// return append(ret, supervisorId)
 		return ret
-	} else {
+	} else { // agent has still a supervisor, so call this function again
 		return append(findAllSupervisorsByAgentPersonId(mongo, supervisorId), supervisorId)
 	}
 }
@@ -134,9 +136,9 @@ func findAllDownlineAgents(mongo db.Database, personID int) []int {
 		return ret
 	}
 
-	if len(agentIds) == 0 {
+	if len(agentIds) == 0 { // agent has no agents below in hierarchy
 		return ret
-	} else {
+	} else { // agent has still agents below him in hierarchy, call this function again
 		for _, agentId := range agentIds {
 			ret = append(findAllDownlineAgents(mongo, agentId), ret...)
 		}

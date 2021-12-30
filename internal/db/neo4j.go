@@ -100,8 +100,14 @@ RETURN p,n
 `
 
 	var qryInterface map[string]interface{}
-	inrec, _ := json.Marshal(qry)
-	json.Unmarshal(inrec, &qryInterface)
+	inrec, err := json.Marshal(qry)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(inrec, &qryInterface)
+	if err != nil {
+		return err
+	}
 	logrus.Println(qryInterface)
 	neo4j.session.Query(context.Background(), query, qryInterface, target)
 	t := reflect.TypeOf(target)
@@ -113,6 +119,35 @@ RETURN p,n
 //Migrate - does nothing
 func (neo4j *Neo4j) Migrate(inf ...interface{}) error {
 	return fmt.Errorf("no implementation")
+}
+
+func (neo4j *Neo4j) Exec(qry string, inf interface{}) error {
+	var qryInterface map[string]interface{}
+	inrec, err := json.Marshal(inf)
+	if err != nil {
+		logrus.Errorln(err)
+
+		return err
+	}
+	err = json.Unmarshal(inrec, &qryInterface)
+	if err != nil {
+		logrus.Errorln(err)
+
+		return err
+	}
+	// logrus.Println(qryInterface)
+	res, _, err := neo4j.session.QueryRaw(context.Background(), qry, nil)
+	if err != nil {
+		logrus.Errorln(err)
+		return err
+	}
+	resj, _ := json.MarshalIndent(&res[0][0], "", "	")
+	err = json.Unmarshal(resj, &inf)
+	if err != nil {
+		logrus.Errorln(err)
+		return err
+	}
+	return nil
 }
 
 // Closes the database connection (should only be used if you close it on purpose)

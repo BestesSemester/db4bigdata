@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/url"
@@ -115,6 +116,10 @@ func (mongo *MyMongo) Find(qry interface{}, target interface{}) error {
 	defer cursor.Close(ctx)
 
 	return nil
+}
+
+func (mongo *MyMongo) Exec(qry string, inf interface{}) error {
+	return errors.New("not implemented")
 }
 
 // Closes the database connection (should only be used if you close it on purpose)

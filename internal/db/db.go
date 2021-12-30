@@ -13,6 +13,7 @@ type Database interface {
 	Delete(obj interface{}) error
 	Find(qry interface{}, obj interface{}) error
 	Migrate(inf ...interface{}) error
+	Exec(qry string, inf interface{}) error
 	Close() error
 }
 
